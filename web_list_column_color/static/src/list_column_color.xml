@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="web.ListRenderer" t-inherit="web.ListRenderer" t-inherit-mode="extension">
+        <xpath expr="//thead//th[@t-att-data-name]" position="attributes">
+            <attribute name="t-att-style">getColumnBgStyle(column)</attribute>
+        </xpath>
+    </t>
+
+    <t t-name="web.ListRenderer.RecordRow" t-inherit="web.ListRenderer.RecordRow" t-inherit-mode="extension">
+        <xpath expr="//td[hasclass('o_data_cell')]" position="attributes">
+            <attribute name="t-att-style">getColumnBgStyle(column)</attribute>
+        </xpath>
+    </t>
+
+</templates>
