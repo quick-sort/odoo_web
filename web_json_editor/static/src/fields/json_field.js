@@ -33,43 +33,40 @@ export class JsonEditorField extends Component {
   setup() {
     this.editorRef = useRef("editor");
     this.editor = null;
-    // Track if user is currently editing
-    this.isDirty = false;
+    this._updateTimer = null;
+    // Track whether the editor has focus to prevent external updates
+    // from resetting cursor position while user is typing.
+    this._hasFocus = false;
 
     onMounted(() => this.initEditor());
     onWillUnmount(() => this.destroyEditor());
 
-    // Update editor when field value changes (similar to useInputField hook)
+    // Update editor when field value changes externally
     useEffect(() => {
-      // Get current value from record
       let value = this.props.record.data[this.props.name];
 
-      // Only update if editor exists, user is not editing, and field is valid
+      // Never overwrite the editor while the user is actively editing
       if (
         this.editor &&
-        !this.isDirty &&
+        !this._hasFocus &&
         !this.props.record.isFieldInvalid(this.props.name)
       ) {
-        // Parse value if it's a string
         if (!value) {
           value = {};
         } else if (typeof value === "string") {
           try {
             value = JSON.parse(value);
           } catch (e) {
-            console.warn("Failed to parse JSON string:", e);
             value = {};
           }
         }
 
-        // Only update if value actually changed
         try {
           const currentValue = this.editor.get();
           if (JSON.stringify(currentValue) !== JSON.stringify(value)) {
             this.editor.set(value);
           }
         } catch (e) {
-          // If editor.get() fails, force set the new value
           this.editor.set(value);
         }
       }
@@ -79,7 +76,6 @@ export class JsonEditorField extends Component {
   initEditor() {
     if (!this.editorRef.el) return;
 
-    // Initialize JSONEditor with options
     const options = {
       mode: this.props.readonly ? "view" : "code",
       modes: ["code", "view"],
@@ -90,20 +86,16 @@ export class JsonEditorField extends Component {
       mainMenuBar: true,
       onChange: () => {
         if (!this.props.readonly) {
-          // Mark as dirty when user edits
-          this.isDirty = true;
-          this.onEditorChange();
+          this._scheduleUpdate();
         }
       },
     };
 
-    // Apply any additional options from nodeOptions
     if (this.props.nodeOptions) {
       const editorOptions = this.props.nodeOptions.editor_options || {};
       Object.assign(options, editorOptions);
     }
 
-    // Add schema for autocomplete if available
     if (this.props.nodeOptions?.schema) {
       try {
         options.schema =
@@ -115,76 +107,90 @@ export class JsonEditorField extends Component {
       }
     }
 
-    // Create editor instance
     this.editor = new JSONEditor(this.editorRef.el, options);
 
-    // Disable Ace worker to prevent loading external worker-json.js
     if (this.editor.aceEditor) {
       this.editor.aceEditor.getSession().setUseWorker(false);
+
+      // Track focus via the underlying Ace editor so we know when the
+      // user is actively typing and should not have their cursor reset.
+      this.editor.aceEditor.on("focus", () => {
+        this._hasFocus = true;
+      });
+      this.editor.aceEditor.on("blur", () => {
+        this._hasFocus = false;
+        // Flush any pending update immediately on blur
+        this._flushUpdate();
+      });
     }
 
-    // Set initial value - use record.data like Odoo's standard fields
     let value = this.props.record.data[this.props.name];
-
     if (!value) {
       value = {};
     } else if (typeof value === "string") {
       try {
         value = JSON.parse(value);
       } catch (e) {
-        console.warn("Failed to parse JSON string:", e);
         value = {};
       }
     }
-
     this.editor.set(value);
   }
 
-  /**
-   * Format the value for display mode
-   * @returns {String} Formatted JSON string for display
-   */
   formatValue() {
     const value = this.props.record.data[this.props.name];
     if (!value) return "{}";
-
     if (typeof value === "string") {
       try {
-        // Try to parse if it's a JSON string
         return formatJSON(JSON.parse(value));
       } catch (e) {
         return value;
       }
     }
-
     return formatJSON(value);
   }
 
   /**
-   * Handle changes from the JSON editor
+   * Debounce record updates so we don't call record.update() on every
+   * keystroke, which would trigger re-renders and cursor resets.
    */
-  onEditorChange() {
-    // Get value from JSONEditor as a JavaScript object
-    const jsonValue = this.editor.get();
-
-    // Handle different field types
-    if (this.props.record.fields[this.props.name].type === "json") {
-      // For JSON fields, pass the object directly
-      this.props.record.update({ [this.props.name]: jsonValue });
-    } else {
-      // For text and char fields, convert to a JSON string
-      const stringValue = JSON.stringify(jsonValue);
-      this.props.record.update({ [this.props.name]: stringValue });
+  _scheduleUpdate() {
+    if (this._updateTimer) {
+      clearTimeout(this._updateTimer);
     }
-
-    // Reset dirty flag after update
-    this.isDirty = false;
+    this._updateTimer = setTimeout(() => {
+      this._updateTimer = null;
+      this._flushUpdate();
+    }, 300);
   }
 
-  /**
-   * Clean up the editor when component is unmounted
-   */
+  _flushUpdate() {
+    if (this._updateTimer) {
+      clearTimeout(this._updateTimer);
+      this._updateTimer = null;
+    }
+    if (!this.editor) return;
+
+    let jsonValue;
+    try {
+      jsonValue = this.editor.get();
+    } catch (e) {
+      // Editor content is not valid JSON yet — skip update
+      return;
+    }
+
+    if (this.props.record.fields[this.props.name].type === "json") {
+      this.props.record.update({ [this.props.name]: jsonValue });
+    } else {
+      this.props.record.update({ [this.props.name]: JSON.stringify(jsonValue) });
+    }
+  }
+
   destroyEditor() {
+    if (this._updateTimer) {
+      clearTimeout(this._updateTimer);
+      this._updateTimer = null;
+    }
     if (this.editor) {
       this.editor.destroy();
       this.editor = null;
@@ -198,7 +204,6 @@ JsonEditorField.props = {
   readonly: { type: Boolean, optional: true },
 };
 
-// Register the field widget (Odoo 18.0 format)
 registry.category("fields").add("json_editor", {
   component: JsonEditorField,
   supportedTypes: ["text", "char", "json"],
