@@ -37,6 +37,6 @@ Features:
     'installable': True,
     'application': True,
     'auto_install': False,
-    'license': 'MIT'
+    'license': 'LGPL'
 
 }
