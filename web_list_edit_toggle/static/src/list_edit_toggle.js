@@ -29,4 +29,18 @@ patch(ListController.prototype, {
     toggleEditMode() {
         this.editToggleState.active = !this.editToggleState.active;
     },
+
+    async onClickSave() {
+        await super.onClickSave(...arguments);
+        if (this._isButtonMode) {
+            this.editToggleState.active = false;
+        }
+    },
+
+    async onClickDiscard() {
+        await super.onClickDiscard(...arguments);
+        if (this._isButtonMode) {
+            this.editToggleState.active = false;
+        }
+    },
 });

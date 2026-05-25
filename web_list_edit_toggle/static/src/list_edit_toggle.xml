@@ -8,12 +8,6 @@
                     t-on-click="toggleEditMode">
                 Edit
             </button>
-            <button t-if="_isButtonMode and editToggleState.active and props.showButtons"
-                    type="button"
-                    class="btn btn-primary o_list_button_edit_toggle ms-1"
-                    t-on-click="toggleEditMode">
-                Quit Editing
-            </button>
         </xpath>
     </t>
 </templates>
