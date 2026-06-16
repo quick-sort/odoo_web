@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         度普利尤单抗（Dupilumab / Dupixent®）
+         人源化 IgG4 单抗，靶向 IL-4Rα，阻断 IL-4 / IL-13 信号通路
+         申办方：赛诺菲 + 再生元
+         已在中国获批适应症：特应性皮炎（2020）、哮喘（2021）、CRSwNP（2023）
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <record id="demo_drug_dupilumab" model="gantt.example.drug">
+        <field name="name">度普利尤单抗</field>
+        <field name="generic_name">Dupixent®（度普利尤单抗注射液，靶向 IL-4Rα）</field>
+        <field name="molecule_type">biologic</field>
+        <field name="sponsor">赛诺菲（Sanofi）/ 再生元（Regeneron）</field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         TA 1：特应性皮炎（Atopic Dermatitis，AD）
+         首个获批适应症，NMPA 于 2020 年 6 月批准
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <record id="demo_ta_dup_ad" model="gantt.example.drug.ta">
+        <field name="drug_id" ref="demo_drug_dupilumab"/>
+        <field name="therapeutic_area">immunology</field>
+        <field name="date_start">2016-06-01</field>
+        <field name="date_stop">2024-12-31</field>
+    </record>
+
+    <record id="demo_trial_ad_p3_solo" model="gantt.example.trial">
+        <field name="drug_ta_id" ref="demo_ta_dup_ad"/>
+        <field name="name">III 期 LIBERTY AD SOLO-ASIA（中重度 AD 成人）</field>
+        <field name="phase_type">phase3</field>
+        <field name="status">completed</field>
+        <field name="date_start">2016-06-01</field>
+        <field name="date_stop">2018-09-30</field>
+        <field name="regulatory_body">multi</field>
+        <field name="site_count">28</field>
+        <field name="subject_count">483</field>
+        <field name="pi">郑捷</field>
+        <field name="notes">主要终点 IGA 0/1 达成，支持 NMPA NDA 申报。</field>
+    </record>
+
+    <record id="demo_trial_ad_p3_ped" model="gantt.example.trial">
+        <field name="drug_ta_id" ref="demo_ta_dup_ad"/>
+        <field name="name">III 期 LIBERTY AD PEDS（青少年 12–17 岁）</field>
+        <field name="phase_type">phase3</field>
+        <field name="status">completed</field>
+        <field name="date_start">2018-01-01</field>
+        <field name="date_stop">2020-06-30</field>
+        <field name="regulatory_body">multi</field>
+        <field name="site_count">15</field>
+        <field name="subject_count">251</field>
+        <field name="pi">马琳</field>
+    </record>
+
+    <record id="demo_trial_ad_nda" model="gantt.example.trial">
+        <field name="drug_ta_id" ref="demo_ta_dup_ad"/>
+        <field name="name">NDA 申报 + NMPA 技术审评（AD 适应症）</field>
+        <field name="phase_type">nda</field>
+        <field name="status">completed</field>
+        <field name="date_start">2019-07-01</field>
+        <field name="date_stop">2020-06-30</field>
+        <field name="regulatory_body">nmpa</field>
+        <field name="pi">李静</field>
+        <field name="notes">2020-06-19 获 NMPA 批准上市，首个生物制剂用于中重度 AD。</field>
+    </record>
+
+    <record id="demo_trial_ad_p4" model="gantt.example.trial">
+        <field name="drug_ta_id" ref="demo_ta_dup_ad"/>
+        <field name="name">IV 期上市后研究（中国真实世界 RWS）</field>
+        <field name="phase_type">phase4</field>
+        <field name="status">ongoing</field>
+        <field name="date_start">2021-01-01</field>
+        <field name="date_stop">2024-12-31</field>
+        <field name="regulatory_body">nmpa</field>
+        <field name="site_count">40</field>
+        <field name="subject_count">2000</field>
+        <field name="pi">陈旭</field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         TA 2：哮喘（Asthma，嗜酸性粒细胞型 + 口服激素依赖型）
+         NMPA 于 2021 年 8 月批准
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <record id="demo_ta_dup_asthma" model="gantt.example.drug.ta">
+        <field name="drug_id" ref="demo_drug_dupilumab"/>
+        <field name="therapeutic_area">respiratory</field>
+        <field name="date_start">2017-03-01</field>
+        <field name="date_stop">2023-12-31</field>
+    </record>
+
+    <record id="demo_trial_asthma_p3_quest" model="gantt.example.trial">
+        <field name="drug_ta_id" ref="demo_ta_dup_asthma"/>
+        <field name="name">III 期 LIBERTY ASTHMA QUEST（亚太区含中国）</field>
+        <field name="phase_type">phase3</field>
+        <field name="status">completed</field>
+        <field name="date_start">2017-03-01</field>
+        <field name="date_stop">2019-12-31</field>
+        <field name="regulatory_body">multi</field>
+        <field name="site_count">32</field>
+        <field name="subject_count">1902</field>
+        <field name="pi">沈华浩</field>
+        <field name="notes">主要终点：严重急性加重年化率降低 67.4%（嗜酸粒细胞 ≥300 亚组）。</field>
+    </record>
+
+    <record id="demo_trial_asthma_p3_venture" model="gantt.example.trial">
+        <field name="drug_ta_id" ref="demo_ta_dup_asthma"/>
+        <field name="name">III 期 LIBERTY ASTHMA VENTURE（OCS 依赖型）</field>
+        <field name="phase_type">phase3</field>
+        <field name="status">completed</field>
+        <field name="date_start">2018-01-01</field>
+        <field name="date_stop">2020-06-30</field>
+        <field name="regulatory_body">multi</field>
+        <field name="site_count">18</field>
+        <field name="subject_count">210</field>
+        <field name="pi">沈华浩</field>
+    </record>
+
+    <record id="demo_trial_asthma_nda" model="gantt.example.trial">
+        <field name="drug_ta_id" ref="demo_ta_dup_asthma"/>
+        <field name="name">NDA 申报 + NMPA 技术审评（哮喘适应症）</field>
+        <field name="phase_type">nda</field>
+        <field name="status">completed</field>
+        <field name="date_start">2020-07-01</field>
+        <field name="date_stop">2021-08-31</field>
+        <field name="regulatory_body">nmpa</field>
+        <field name="pi">李静</field>
+        <field name="notes">2021-08-10 NMPA 批准，适用于 12 岁以上中重度嗜酸性粒细胞型哮喘。</field>
+    </record>
+
+    <record id="demo_trial_asthma_p4" model="gantt.example.trial">
+        <field name="drug_ta_id" ref="demo_ta_dup_asthma"/>
+        <field name="name">IV 期上市后研究（哮喘长期安全性）</field>
+        <field name="phase_type">phase4</field>
+        <field name="status">ongoing</field>
+        <field name="date_start">2022-01-01</field>
+        <field name="date_stop">2023-12-31</field>
+        <field name="regulatory_body">nmpa</field>
+        <field name="site_count">25</field>
+        <field name="subject_count">500</field>
+        <field name="pi">王刚</field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         TA 3：慢性鼻窦炎伴鼻息肉（CRSwNP）
+         NMPA 于 2023 年 7 月批准
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <record id="demo_ta_dup_crsnp" model="gantt.example.drug.ta">
+        <field name="drug_id" ref="demo_drug_dupilumab"/>
+        <field name="therapeutic_area">other</field>
+        <field name="date_start">2019-06-01</field>
+        <field name="date_stop">2025-06-30</field>
+    </record>
+
+    <record id="demo_trial_crsnp_p3_sinus" model="gantt.example.trial">
+        <field name="drug_ta_id" ref="demo_ta_dup_crsnp"/>
+        <field name="name">III 期 LIBERTY-NP SINUS China（CRSwNP）</field>
+        <field name="phase_type">phase3</field>
+        <field name="status">completed</field>
+        <field name="date_start">2019-06-01</field>
+        <field name="date_stop">2022-03-31</field>
+        <field name="regulatory_body">nmpa</field>
+        <field name="site_count">22</field>
+        <field name="subject_count">276</field>
+        <field name="pi">张罗</field>
+        <field name="notes">主要终点：鼻息肉评分（NPS）与鼻塞症状双达标。</field>
+    </record>
+
+    <record id="demo_trial_crsnp_nda" model="gantt.example.trial">
+        <field name="drug_ta_id" ref="demo_ta_dup_crsnp"/>
+        <field name="name">NDA 申报 + NMPA 技术审评（CRSwNP）</field>
+        <field name="phase_type">nda</field>
+        <field name="status">completed</field>
+        <field name="date_start">2022-04-01</field>
+        <field name="date_stop">2023-07-31</field>
+        <field name="regulatory_body">nmpa</field>
+        <field name="pi">李静</field>
+        <field name="notes">2023-07 NMPA 批准，成为中国首个获批用于 CRSwNP 的生物制剂。</field>
+    </record>
+
+    <record id="demo_trial_crsnp_p4" model="gantt.example.trial">
+        <field name="drug_ta_id" ref="demo_ta_dup_crsnp"/>
+        <field name="name">IV 期上市后安全性观察（CRSwNP）</field>
+        <field name="phase_type">phase4</field>
+        <field name="status">ongoing</field>
+        <field name="date_start">2023-10-01</field>
+        <field name="date_stop">2025-06-30</field>
+        <field name="regulatory_body">nmpa</field>
+        <field name="site_count">20</field>
+        <field name="subject_count">300</field>
+        <field name="pi">于德新</field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         TA 4：慢性阻塞性肺疾病（COPD，2型炎症表型）
+         FDA 于 2024 年 6 月批准；中国 NDA 申报进行中
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <record id="demo_ta_dup_copd" model="gantt.example.drug.ta">
+        <field name="drug_id" ref="demo_drug_dupilumab"/>
+        <field name="therapeutic_area">respiratory</field>
+        <field name="date_start">2020-09-01</field>
+        <field name="date_stop">2027-12-31</field>
+    </record>
+
+    <record id="demo_trial_copd_p3_boreas" model="gantt.example.trial">
+        <field name="drug_ta_id" ref="demo_ta_dup_copd"/>
+        <field name="name">III 期 BOREAS（含中国中心，嗜酸粒 ≥300 COPD）</field>
+        <field name="phase_type">phase3</field>
+        <field name="status">completed</field>
+        <field name="date_start">2020-09-01</field>
+        <field name="date_stop">2022-12-31</field>
+        <field name="regulatory_body">multi</field>
+        <field name="site_count">20</field>
+        <field name="subject_count">939</field>
+        <field name="pi">冉丕鑫</field>
+        <field name="notes">主要终点：中重度急性加重年化率降低 34%。FDA 于 2024-06 批准。</field>
+    </record>
+
+    <record id="demo_trial_copd_p3_notus" model="gantt.example.trial">
+        <field name="drug_ta_id" ref="demo_ta_dup_copd"/>
+        <field name="name">III 期 NOTUS 确证性研究（中国独立队列）</field>
+        <field name="phase_type">phase3</field>
+        <field name="status">completed</field>
+        <field name="date_start">2021-06-01</field>
+        <field name="date_stop">2023-09-30</field>
+        <field name="regulatory_body">nmpa</field>
+        <field name="site_count">15</field>
+        <field name="subject_count">348</field>
+        <field name="pi">冉丕鑫</field>
+    </record>
+
+    <record id="demo_trial_copd_nda" model="gantt.example.trial">
+        <field name="drug_ta_id" ref="demo_ta_dup_copd"/>
+        <field name="name">NDA 申报（NMPA，COPD 适应症）</field>
+        <field name="phase_type">nda</field>
+        <field name="status">ongoing</field>
+        <field name="date_start">2024-01-01</field>
+        <field name="date_stop">2025-06-30</field>
+        <field name="regulatory_body">nmpa</field>
+        <field name="pi">李静</field>
+        <field name="notes">预计 2025 年中获 NMPA 优先审评结论。</field>
+    </record>
+
+    <record id="demo_trial_copd_review" model="gantt.example.trial">
+        <field name="drug_ta_id" ref="demo_ta_dup_copd"/>
+        <field name="name">NMPA 技术审评（COPD）</field>
+        <field name="phase_type">review</field>
+        <field name="status">planned</field>
+        <field name="date_start">2025-07-01</field>
+        <field name="date_stop">2026-06-30</field>
+        <field name="regulatory_body">nmpa</field>
+        <field name="pi">李静</field>
+    </record>
+
+</odoo>

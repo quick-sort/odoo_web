@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         Trial Form View（弹窗）
+         点击 TA 甘特图中的 trial bar 时弹出此视图
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <record id="view_gantt_example_trial_form" model="ir.ui.view">
+        <field name="name">gantt.example.trial.form</field>
+        <field name="model">gantt.example.trial</field>
+        <field name="arch" type="xml">
+            <form string="临床试验详情">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="试验名称"/>
+                        <h1><field name="name"/></h1>
+                    </div>
+
+                    <group>
+                        <group string="基本信息">
+                            <field name="drug_ta_id" readonly="1"/>
+                            <field name="phase_type"/>
+                            <field name="status"/>
+                            <field name="regulatory_body"/>
+                        </group>
+                        <group string="时间与规模">
+                            <field name="date_start"/>
+                            <field name="date_stop"/>
+                            <field name="site_count" string="研究中心数"/>
+                            <field name="subject_count" string="受试者人数"/>
+                            <field name="pi" string="主要研究者（PI）"/>
+                        </group>
+                    </group>
+
+                    <group string="备注">
+                        <field name="notes" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         Drug × TA（DrugTa）弹窗 Form View
+         点击药品甘特图中的 TA bar 时弹出此视图，
+         内部用另一个甘特图展示该 TA 下的所有试验。
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <record id="view_gantt_example_drug_ta_form" model="ir.ui.view">
+        <field name="name">gantt.example.drug.ta.form</field>
+        <field name="model">gantt.example.drug.ta</field>
+        <field name="arch" type="xml">
+            <form string="TA 申报进度">
+                <sheet>
+                    <div class="oe_title">
+                        <h2>
+                            <field name="drug_id" readonly="1"/>
+                            ·
+                            <field name="therapeutic_area" readonly="1"/>
+                        </h2>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="highest_phase" readonly="1"/>
+                            <field name="trial_count" string="试验数" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="date_start"/>
+                            <field name="date_stop"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+
+                        <!-- TA 下各试验的甘特图（月刻度） -->
+                        <page string="试验进度甘特图" name="trial_gantt">
+                            <field name="trial_ids"
+                                   widget="x2many_gantt"
+                                   date_start="date_start"
+                                   date_end="date_stop"
+                                   name_field="name"
+                                   default_scale="month"
+                                   bar_clickable="1"
+                                   tooltip_fields="name,phase_type,status,date_start,date_stop,regulatory_body,pi,site_count,subject_count"
+                                   nolabel="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="phase_type"/>
+                                    <field name="status"/>
+                                    <field name="date_start"/>
+                                    <field name="date_stop"/>
+                                    <field name="regulatory_body"/>
+                                    <field name="pi"/>
+                                    <field name="site_count"/>
+                                    <field name="subject_count"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- 试验明细列表（可编辑） -->
+                        <page string="试验明细" name="trial_list">
+                            <field name="trial_ids" nolabel="1">
+                                <list editable="bottom" default_order="date_start">
+                                    <field name="name"/>
+                                    <field name="phase_type"/>
+                                    <field name="status"/>
+                                    <field name="date_start"/>
+                                    <field name="date_stop"/>
+                                    <field name="regulatory_body"/>
+                                    <field name="site_count"/>
+                                    <field name="subject_count"/>
+                                    <field name="pi"/>
+                                </list>
+                            </field>
+                        </page>
+
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         Drug Form View（主视图）
+         甘特图以 TA 为 bar，bar_clickable 开启后点击弹出 DrugTa dialog
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <record id="view_gantt_example_drug_form" model="ir.ui.view">
+        <field name="name">gantt.example.drug.form</field>
+        <field name="model">gantt.example.drug</field>
+        <field name="arch" type="xml">
+            <form string="药品临床申报">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="药品名称"/>
+                        <h1>
+                            <field name="name" placeholder="药品名称（研发代号）"/>
+                        </h1>
+                        <h3>
+                            <field name="generic_name" placeholder="通用名"/>
+                        </h3>
+                    </div>
+
+                    <group>
+                        <group string="基本信息">
+                            <field name="molecule_type"/>
+                            <field name="sponsor"/>
+                            <field name="responsible_id"/>
+                        </group>
+                        <group string="概览">
+                            <field name="ta_count" string="治疗领域方向数"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <field name="notes" placeholder="备注…"/>
+                    </group>
+
+                    <notebook>
+
+                        <!-- 主甘特图：每个 TA 一条 bar，点击弹 dialog -->
+                        <page string="各 TA 进度甘特图" name="ta_gantt">
+                            <div class="text-muted small mb-2">
+                                点击甘特图中的 TA 条块，可查看该方向下所有临床试验的详细进度。
+                            </div>
+                            <field name="ta_ids"
+                                   widget="x2many_gantt"
+                                   date_start="date_start"
+                                   date_end="date_stop"
+                                   name_field="display_name"
+                                   default_scale="month"
+                                   bar_clickable="1"
+                                   tooltip_fields="therapeutic_area,highest_phase,date_start,date_stop,trial_count"
+                                   nolabel="1">
+                                <list>
+                                    <field name="display_name"/>
+                                    <field name="therapeutic_area"/>
+                                    <field name="highest_phase"/>
+                                    <field name="date_start"/>
+                                    <field name="date_stop"/>
+                                    <field name="trial_count"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- TA 明细列表（可编辑，管理各方向时间段） -->
+                        <page string="TA 明细" name="ta_list">
+                            <field name="ta_ids" nolabel="1">
+                                <list editable="bottom">
+                                    <field name="therapeutic_area"/>
+                                    <field name="highest_phase" readonly="1"/>
+                                    <field name="date_start"/>
+                                    <field name="date_stop"/>
+                                    <field name="trial_count" string="试验数" readonly="1"/>
+                                </list>
+                            </field>
+                        </page>
+
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         Drug List View
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <record id="view_gantt_example_drug_list" model="ir.ui.view">
+        <field name="name">gantt.example.drug.list</field>
+        <field name="model">gantt.example.drug</field>
+        <field name="arch" type="xml">
+            <list string="药品列表">
+                <field name="name"/>
+                <field name="generic_name"/>
+                <field name="molecule_type"/>
+                <field name="sponsor"/>
+                <field name="responsible_id"/>
+                <field name="ta_count" string="TA 数"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         Search View
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <record id="view_gantt_example_drug_search" model="ir.ui.view">
+        <field name="name">gantt.example.drug.search</field>
+        <field name="model">gantt.example.drug</field>
+        <field name="arch" type="xml">
+            <search string="搜索药品">
+                <field name="name"/>
+                <field name="generic_name"/>
+                <field name="sponsor"/>
+                <filter name="biologic" string="生物制品"
+                        domain="[('molecule_type','=','biologic')]"/>
+                <filter name="responsible_me" string="我负责的"
+                        domain="[('responsible_id','=',uid)]"/>
+                <filter name="group_by_type" string="按药物类型"
+                        context="{'group_by': 'molecule_type'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         Action + 菜单
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <record id="action_gantt_example_drug" model="ir.actions.act_window">
+        <field name="name">药品临床申报管理</field>
+        <field name="res_model">gantt.example.drug</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_gantt_example_drug_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                新增药品，管理其在各治疗领域（TA）的临床试验申报进度。
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_gantt_example_root"
+              name="临床申报（甘特图演示）"
+              sequence="90"/>
+
+    <menuitem id="menu_gantt_example_drug"
+              name="药品申报管理"
+              parent="menu_gantt_example_root"
+              action="action_gantt_example_drug"
+              sequence="10"/>
+
+</odoo>

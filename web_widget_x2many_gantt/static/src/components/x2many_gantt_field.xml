@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+<t t-name="web_widget_x2many_gantt.GanttField">
+    <div class="o_x2many_gantt">
+
+        <!-- ── Empty state ────────────────────────────────────────── -->
+        <t t-if="!ganttData">
+            <div class="o_gantt_empty">
+                <i class="fa fa-calendar-o me-2"/>
+                No records with valid dates to display.
+            </div>
+        </t>
+
+        <!-- ── Gantt chart ────────────────────────────────────────── -->
+        <t t-else="">
+
+            <!-- Scale toolbar -->
+            <div class="o_gantt_toolbar">
+                <div class="btn-group btn-group-sm">
+                    <t t-foreach="['day', 'week', 'month']" t-as="s" t-key="s">
+                        <button
+                            t-att-class="{
+                                'btn': true,
+                                'btn-primary': state.scale === s,
+                                'btn-outline-secondary': state.scale !== s,
+                            }"
+                            t-on-click="() => this.setScale(s)"
+                        >
+                            <t t-esc="s.charAt(0).toUpperCase() + s.slice(1)"/>
+                        </button>
+                    </t>
+                </div>
+                <span class="o_gantt_legend text-muted small ms-3">
+                    <i class="fa fa-circle o_gantt_today_dot me-1"/>Today
+                </span>
+            </div>
+
+            <!-- Main layout: sidebar + scrollable timeline -->
+            <div class="o_gantt_layout">
+
+                <!-- ── Left sidebar (task labels, sticky) ─────────── -->
+                <div class="o_gantt_sidebar">
+                    <!-- Header spacer (aligns with two-row header) -->
+                    <div class="o_gantt_sidebar_header"/>
+                    <!-- One label per record -->
+                    <t t-foreach="ganttData.rows" t-as="row" t-key="row.id">
+                        <div class="o_gantt_row_label" t-att-title="row.name">
+                            <span t-esc="row.name"/>
+                        </div>
+                    </t>
+                </div>
+
+                <!-- ── Scrollable timeline area ────────────────────── -->
+                <div class="o_gantt_scroll_area">
+
+                    <!-- Two-row time header (sticky top) -->
+                    <div class="o_gantt_header" t-att-style="`min-width: ${ganttData.totalPx}px`">
+                        <!-- Major row: months / years -->
+                        <div class="o_gantt_header_row o_gantt_header_major">
+                            <t t-foreach="ganttData.majorCells" t-as="cell" t-key="cell.key">
+                                <div class="o_gantt_header_cell"
+                                     t-att-style="`width: ${cell.width}px; min-width: ${cell.width}px`">
+                                    <t t-esc="cell.label"/>
+                                </div>
+                            </t>
+                        </div>
+                        <!-- Minor row: days / weeks / months -->
+                        <div class="o_gantt_header_row o_gantt_header_minor">
+                            <t t-foreach="ganttData.minorCells" t-as="cell" t-key="cell.key">
+                                <div class="o_gantt_header_cell"
+                                     t-att-style="`width: ${cell.width}px; min-width: ${cell.width}px`">
+                                    <t t-esc="cell.label"/>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+
+                    <!-- Task bar area -->
+                    <div class="o_gantt_body"
+                         t-att-style="`min-width: ${ganttData.totalPx}px; height: ${bodyHeight}px`">
+
+                        <!-- Today vertical line -->
+                        <t t-if="ganttData.todayPx !== null">
+                            <div class="o_gantt_today_line"
+                                 t-att-style="`left: ${ganttData.todayPx}px`"/>
+                        </t>
+
+                        <!-- One row per record -->
+                        <t t-foreach="ganttData.rows" t-as="row" t-key="row.id">
+                            <div class="o_gantt_row" t-att-style="`height: ${rowHeight}px`">
+
+                                <!-- Bar (only when dates are set) -->
+                                <t t-if="row.bar">
+                                    <div
+                                        t-att-class="{
+                                            'o_gantt_bar': true,
+                                            'o_gantt_bar_clickable': props.barClickable,
+                                        }"
+                                        t-att-style="`
+                                            left:             ${row.bar.left}px;
+                                            width:            ${row.bar.width}px;
+                                            background-color: ${row.bar.color};
+                                        `"
+                                        t-att-title="row.bar.tooltip"
+                                        t-on-click="() => this.onBarClick(row)"
+                                    >
+                                        <span class="o_gantt_bar_label" t-esc="row.name"/>
+                                    </div>
+                                </t>
+
+                            </div>
+                        </t>
+
+                    </div><!-- /.o_gantt_body -->
+                </div><!-- /.o_gantt_scroll_area -->
+            </div><!-- /.o_gantt_layout -->
+        </t>
+    </div>
+</t>
+
+</templates>

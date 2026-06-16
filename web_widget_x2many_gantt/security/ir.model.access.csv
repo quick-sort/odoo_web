@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_gantt_example_drug,gantt.example.drug,model_gantt_example_drug,,1,1,1,1
+access_gantt_example_drug_ta,gantt.example.drug.ta,model_gantt_example_drug_ta,,1,1,1,1
+access_gantt_example_trial,gantt.example.trial,model_gantt_example_trial,,1,1,1,1
