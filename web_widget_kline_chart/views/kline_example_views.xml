@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         Form View：K 线主图 + 成交额副图
+    ══════════════════════════════════════════════════════════════════ -->
+    <record id="view_kline_example_symbol_form" model="ir.ui.view">
+        <field name="name">kline.example.symbol.form</field>
+        <field name="model">kline.example.symbol</field>
+        <field name="arch" type="xml">
+            <form string="标的行情">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="标的名称"/>
+                        <h1><field name="name" placeholder="例如：贵州茅台"/></h1>
+                        <h3><field name="code" placeholder="例如：600519"/></h3>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="market"/>
+                            <field name="bar_count"/>
+                        </group>
+                    </group>
+
+                    <group string="K 线行情">
+                        <field name="kline_data"
+                               widget="kline_chart"
+                               nolabel="1"
+                               colspan="2"
+                               options="{
+                                   'height': 460,
+                                   'show_volume': True,
+                               }"/>
+                    </group>
+
+                    <group string="备注">
+                        <field name="notes" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         List View
+    ══════════════════════════════════════════════════════════════════ -->
+    <record id="view_kline_example_symbol_list" model="ir.ui.view">
+        <field name="name">kline.example.symbol.list</field>
+        <field name="model">kline.example.symbol</field>
+        <field name="arch" type="xml">
+            <list string="标的列表">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="market"/>
+                <field name="bar_count" string="K 线根数"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         Search View
+    ══════════════════════════════════════════════════════════════════ -->
+    <record id="view_kline_example_symbol_search" model="ir.ui.view">
+        <field name="name">kline.example.symbol.search</field>
+        <field name="model">kline.example.symbol</field>
+        <field name="arch" type="xml">
+            <search string="搜索标的">
+                <field name="name"/>
+                <field name="code"/>
+                <filter name="market_sh" string="沪市"
+                        domain="[('market','=','sh')]"/>
+                <filter name="market_sz" string="深市"
+                        domain="[('market','=','sz')]"/>
+                <filter name="market_index" string="指数"
+                        domain="[('market','=','index')]"/>
+                <filter name="group_by_market" string="按市场分组"
+                        context="{'group_by': 'market'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         Action + 菜单
+    ══════════════════════════════════════════════════════════════════ -->
+    <record id="action_kline_example_symbol" model="ir.actions.act_window">
+        <field name="name">K 线行情（演示）</field>
+        <field name="res_model">kline.example.symbol</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_kline_example_symbol_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                新增一个标的，在其 K 线数据（json）字段中填入 OHLCV 序列即可渲染行情图。
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_kline_example_root"
+              name="K 线图（演示）"
+              sequence="95"/>
+
+    <menuitem id="menu_kline_example_symbol"
+              name="标的行情"
+              parent="menu_kline_example_root"
+              action="action_kline_example_symbol"
+              sequence="10"/>
+
+</odoo>

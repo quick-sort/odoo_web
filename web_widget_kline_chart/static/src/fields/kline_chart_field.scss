@@ -1,0 +1,52 @@
+.o_field_kline_chart {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: 120px;
+
+    .o_kline_reset {
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        z-index: 2;
+        padding: 0 10px;
+        line-height: 1.6;
+        opacity: 0.65;
+        cursor: pointer;
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    .o_kline_price_wrap,
+    .o_kline_volume_wrap {
+        position: relative;
+        cursor: grab;
+
+        &:active {
+            cursor: grabbing;
+        }
+    }
+
+    .o_kline_price_wrap {
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
+    .o_kline_volume_wrap {
+        flex: 0 0 28%;
+        min-height: 60px;
+    }
+
+    .o_kline_empty {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $gray-500;
+        font-size: $font-size-sm;
+        pointer-events: none;
+    }
+}

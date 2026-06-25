@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!--
+        每个标的先建记录，再调用 _populate_demo_kline 生成约 1000 个交易日的
+        OHLCV 序列写入 kline_data，避免在 XML 里内联超大 JSON 字面量。
+        参数：rec_id, n_days, start_price, drift, vol, seed, volume_base
+    -->
+
+    <!-- 贵州茅台（600519）—— 震荡上行 -->
+    <record id="demo_kline_maotai" model="kline.example.symbol">
+        <field name="name">贵州茅台</field>
+        <field name="code">600519</field>
+        <field name="market">sh</field>
+    </record>
+    <function model="kline.example.symbol" name="_populate_demo_kline"
+              eval="(ref('demo_kline_maotai'), 1000, 1680.0, 0.0006, 0.018, 11, 2600000)"/>
+
+    <!-- 宁德时代（300750）—— 宽幅震荡 -->
+    <record id="demo_kline_catl" model="kline.example.symbol">
+        <field name="name">宁德时代</field>
+        <field name="code">300750</field>
+        <field name="market">sz</field>
+    </record>
+    <function model="kline.example.symbol" name="_populate_demo_kline"
+              eval="(ref('demo_kline_catl'), 1000, 178.0, 0.0003, 0.028, 22, 18000000)"/>
+
+    <!-- 上证指数（000001）—— 横盘、大成交额 -->
+    <record id="demo_kline_index" model="kline.example.symbol">
+        <field name="name">上证指数</field>
+        <field name="code">000001</field>
+        <field name="market">index</field>
+    </record>
+    <function model="kline.example.symbol" name="_populate_demo_kline"
+              eval="(ref('demo_kline_index'), 1000, 3000.0, 0.0001, 0.011, 33, 350000000)"/>
+
+</odoo>

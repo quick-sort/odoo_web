@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+    <t t-name="web_widget_kline_chart.KlineChartField" owl="1">
+        <div t-ref="root" class="o_field_kline_chart" t-att-style="containerStyle"
+             t-on-mouseleave="onMouseLeave">
+            <button type="button"
+                    class="btn btn-sm btn-secondary o_kline_reset"
+                    t-on-click="onResetZoomClick"
+                    title="重置缩放">
+                ↺
+            </button>
+            <div class="o_kline_price_wrap">
+                <canvas t-ref="priceCanvas" />
+            </div>
+            <div t-if="showVolume" class="o_kline_volume_wrap">
+                <canvas t-ref="volumeCanvas" />
+            </div>
+            <div t-if="isEmpty" class="o_kline_empty">
+                暂无 K 线数据
+            </div>
+        </div>
+    </t>
+</templates>
