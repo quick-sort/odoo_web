@@ -199,7 +199,7 @@ export class KlineChartField extends Component {
             type: "category",
             labels: labels,
             ticks: showTicks
-                ? { maxRotation: 0, autoSkip: true, autoSkipPadding: 24 }
+                ? { align: "inner", maxRotation: 0, autoSkip: true, autoSkipPadding: 24 }
                 : { display: false },
             grid: { display: false },
             afterFit: (scale) => {
