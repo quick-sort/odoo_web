@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="stock_sim_trading.StockSimResultChart" owl="1">
+        <div class="o_stock_sim_result">
+            <div t-if="state.loading" class="o_result_loading">
+                <i class="fa fa-spinner fa-spin"/> 加载中…
+            </div>
+
+            <div t-else="" class="o_result_content">
+                <!-- 汇总卡片 -->
+                <div class="o_result_summary" t-if="summary">
+                    <div class="o_card">
+                        <span class="o_card_label">账户终值</span>
+                        <span class="o_card_value" t-esc="fmtMoney(summary.final_assets)"/>
+                    </div>
+                    <div class="o_card" t-att-class="pctClass(summary.account_pct)">
+                        <span class="o_card_label">账户收益率</span>
+                        <span class="o_card_value" t-esc="fmtPct(summary.account_pct)"/>
+                    </div>
+                    <div class="o_card" t-att-class="pctClass(summary.bench_pct)">
+                        <span class="o_card_label">
+                            标的收益（<t t-esc="summary.symbol_name"/>）
+                        </span>
+                        <span class="o_card_value" t-esc="fmtPct(summary.bench_pct)"/>
+                    </div>
+                    <div class="o_card" t-att-class="pctClass(summary.excess_pct)">
+                        <span class="o_card_label">超额收益</span>
+                        <span class="o_card_value" t-esc="fmtPct(summary.excess_pct)"/>
+                    </div>
+                    <div class="o_card">
+                        <span class="o_card_label">交易笔数</span>
+                        <span class="o_card_value" t-esc="summary.trade_count"/>
+                    </div>
+                    <div class="o_card">
+                        <span class="o_card_label">交易天数</span>
+                        <span class="o_card_value" t-esc="summary.days"/>
+                    </div>
+                </div>
+
+                <!-- 对比曲线 -->
+                <div class="o_result_chart">
+                    <canvas t-ref="chart"/>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

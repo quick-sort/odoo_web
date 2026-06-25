@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         演示：一局草稿状态的模拟训练，标的范围引用 kline 演示数据
+    ══════════════════════════════════════════════════════════════════ -->
+    <record id="demo_stock_sim_game" model="stock.sim.game">
+        <field name="name">盲盒训练（演示）</field>
+        <field name="state">draft</field>
+        <field name="starting_capital">100000</field>
+        <field name="commission_rate">0.00025</field>
+        <field name="min_commission">5</field>
+        <field name="stamp_duty_rate">0.0005</field>
+        <field name="transfer_fee_rate">0.00001</field>
+        <field name="trade_lot">100</field>
+        <field name="symbol_ids" eval="[(6, 0, [
+            ref('web_widget_kline_chart.demo_kline_maotai'),
+            ref('web_widget_kline_chart.demo_kline_catl'),
+            ref('web_widget_kline_chart.demo_kline_index'),
+        ])]"/>
+    </record>
+
+</odoo>
