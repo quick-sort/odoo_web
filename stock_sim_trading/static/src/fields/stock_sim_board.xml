@@ -19,7 +19,7 @@
                     </div>
                 </div>
 
-                <!-- 图表 + 状态 -->
+                <!-- 图表 + 持仓/操作 -->
                 <div class="o_stock_sim_main">
                     <div class="o_stock_sim_chart">
                         <div class="o_kline_price_wrap">
@@ -30,85 +30,88 @@
                         </div>
                     </div>
 
-                    <div class="o_stock_sim_stats">
-                        <div class="o_stat o_stat_total">
-                            <span class="o_label">总资产</span>
-                            <span class="o_value" t-esc="fmtMoney(board.total_assets)"/>
-                        </div>
-                        <div class="o_stat" t-att-class="pnlClass">
-                            <span class="o_label">累计盈亏</span>
-                            <span class="o_value">
-                                <t t-esc="fmtMoney(board.total_pnl)"/>
-                                (<t t-esc="fmtPct(board.total_pnl_pct)"/>)
-                            </span>
-                        </div>
-                        <div class="o_stat_row">
-                            <div class="o_stat">
-                                <span class="o_label">现金</span>
-                                <span class="o_value" t-esc="fmtMoney(board.cash)"/>
+                    <div class="o_stock_sim_side">
+                        <!-- 持仓情况 -->
+                        <div class="o_stock_sim_stats">
+                            <div class="o_stat o_stat_total">
+                                <span class="o_label">总资产</span>
+                                <span class="o_value" t-esc="fmtMoney(board.total_assets)"/>
+                            </div>
+                            <div class="o_stat" t-att-class="pnlClass">
+                                <span class="o_label">累计盈亏</span>
+                                <span class="o_value">
+                                    <t t-esc="fmtMoney(board.total_pnl)"/>
+                                    (<t t-esc="fmtPct(board.total_pnl_pct)"/>)
+                                </span>
+                            </div>
+                            <div class="o_stat_row">
+                                <div class="o_stat">
+                                    <span class="o_label">现金</span>
+                                    <span class="o_value" t-esc="fmtMoney(board.cash)"/>
+                                </div>
+                                <div class="o_stat">
+                                    <span class="o_label">持仓市值</span>
+                                    <span class="o_value" t-esc="fmtMoney(board.position_value)"/>
+                                </div>
+                            </div>
+                            <div class="o_stat_row">
+                                <div class="o_stat">
+                                    <span class="o_label">持股</span>
+                                    <span class="o_value" t-esc="board.shares"/>
+                                </div>
+                                <div class="o_stat">
+                                    <span class="o_label">持仓均价</span>
+                                    <span class="o_value" t-esc="fmtMoney(board.avg_cost)"/>
+                                </div>
                             </div>
                             <div class="o_stat">
-                                <span class="o_label">持仓市值</span>
-                                <span class="o_value" t-esc="fmtMoney(board.position_value)"/>
+                                <span class="o_label">当日收盘</span>
+                                <span class="o_value" t-esc="fmtMoney(board.close_price)"/>
                             </div>
                         </div>
-                        <div class="o_stat_row">
-                            <div class="o_stat">
-                                <span class="o_label">持股</span>
-                                <span class="o_value" t-esc="board.shares"/>
-                            </div>
-                            <div class="o_stat">
-                                <span class="o_label">持仓均价</span>
-                                <span class="o_value" t-esc="fmtMoney(board.avg_cost)"/>
-                            </div>
-                        </div>
-                        <div class="o_stat">
-                            <span class="o_label">当日收盘</span>
-                            <span class="o_value" t-esc="fmtMoney(board.close_price)"/>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- 操作 -->
-                <div class="o_stock_sim_controls">
-                    <div class="o_ratio_wrap">
-                        <div class="o_ratio_label">
-                            仓位比例：<b t-esc="state.ratio"/>%
+                        <!-- 仓位比例 -->
+                        <div class="o_stock_sim_ratio">
+                            <div class="o_ratio_label">
+                                仓位比例：<b t-esc="state.ratio"/>%
+                            </div>
+                            <div class="o_ratio_quick">
+                                <button t-on-click="() => this.setRatio(25)" t-att-disabled="state.busy">25%</button>
+                                <button t-on-click="() => this.setRatio(50)" t-att-disabled="state.busy">50%</button>
+                                <button t-on-click="() => this.setRatio(75)" t-att-disabled="state.busy">75%</button>
+                                <button t-on-click="() => this.setRatio(100)" t-att-disabled="state.busy">100%</button>
+                            </div>
+                            <div class="o_ratio_hint">
+                                <span>买入：
+                                    <t t-if="buyEstimate.shares">
+                                        <b t-esc="buyEstimate.shares"/> 股 / <b t-esc="buyEstimate.lots"/> 手
+                                    </t>
+                                    <t t-else="">不足 1 手</t>
+                                </span>
+                                <span>卖出：<b t-esc="sellSharesEstimate"/> 股</span>
+                            </div>
                         </div>
-                        <input type="range" min="1" max="100" step="1"
-                               class="o_ratio_slider"
-                               t-att-value="state.ratio"
-                               t-on-input="onRatio"
-                               disabled="state.busy"/>
-                        <div class="o_ratio_quick">
-                            <button t-on-click="() => this.setRatio(25)" disabled="state.busy">25%</button>
-                            <button t-on-click="() => this.setRatio(50)" disabled="state.busy">50%</button>
-                            <button t-on-click="() => this.setRatio(75)" disabled="state.busy">75%</button>
-                            <button t-on-click="() => this.setRatio(100)" disabled="state.busy">100%</button>
+
+                        <!-- 操作 -->
+                        <div class="o_action_buttons">
+                            <button type="button" class="btn btn-primary o_btn_buy"
+                                    t-on-click="onBuy" t-att-disabled="state.busy">
+                                <i class="fa fa-arrow-up"/> 买入
+                            </button>
+                            <button type="button" class="btn btn-danger o_btn_sell"
+                                    t-on-click="onSell" t-att-disabled="state.busy">
+                                <i class="fa fa-arrow-down"/> 卖出
+                            </button>
+                            <button type="button" class="btn btn-secondary o_btn_next"
+                                    t-on-click="onNext"
+                                    t-att-disabled="state.busy or board.is_last_day">
+                                <i class="fa fa-step-forward"/> 下一日
+                            </button>
+                            <button type="button" class="btn btn-default o_btn_finish"
+                                    t-on-click="onFinish" t-att-disabled="state.busy">
+                                <i class="fa fa-flag-checkered"/> 结束模拟
+                            </button>
                         </div>
-                        <div class="o_ratio_hint">
-                            <span>买入可用约 <b t-esc="fmtCompact(buyBudgetEstimate)"/></span>
-                            <span>卖出约 <b t-esc="sellSharesEstimate"/> 股</span>
-                        </div>
-                    </div>
-                    <div class="o_action_buttons">
-                        <button type="button" class="btn btn-primary o_btn_buy"
-                                t-on-click="onBuy" disabled="state.busy">
-                            <i class="fa fa-arrow-up"/> 买入
-                        </button>
-                        <button type="button" class="btn btn-danger o_btn_sell"
-                                t-on-click="onSell" disabled="state.busy">
-                            <i class="fa fa-arrow-down"/> 卖出
-                        </button>
-                        <button type="button" class="btn btn-secondary o_btn_next"
-                                t-on-click="onNext"
-                                disabled="state.busy or board.is_last_day">
-                            <i class="fa fa-step-forward"/> 下一日
-                        </button>
-                        <button type="button" class="btn btn-default o_btn_finish"
-                                t-on-click="onFinish" disabled="state.busy">
-                            <i class="fa fa-flag-checkered"/> 结束模拟
-                        </button>
                     </div>
                 </div>
 

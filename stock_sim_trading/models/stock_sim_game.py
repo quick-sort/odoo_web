@@ -40,7 +40,7 @@ class StockSimGame(models.Model):
     active = fields.Boolean(default=True)
 
     # ── 配置（draft 期可编辑）─────────────────────────────────────
-    starting_capital = fields.Float(string="起始资金", digits=(16, 2), default=100000.0)
+    starting_capital = fields.Float(string="起始资金", digits=(16, 2), default=1000000.0)
     commission_rate = fields.Float(
         string="佣金费率",
         digits=(8, 6),
@@ -202,9 +202,9 @@ class StockSimGame(models.Model):
             if not klines:
                 raise UserError(_("标的 %s 无 K 线数据。") % symbol.display_name)
 
-            # 随机起始日，留足未来交易日
-            last_allowed = max(0, len(klines) - MIN_FUTURE_BARS)
-            start_index = random.randint(0, last_allowed) if last_allowed > 0 else 0
+            # 随机起始日，留足未来交易日；至少从第 2 根开始，保证开局可见 >= 2 根 K 线
+            last_allowed = max(1, len(klines) - MIN_FUTURE_BARS)
+            start_index = random.randint(1, last_allowed)
 
             rec.write({
                 "state": "running",

@@ -59,104 +59,96 @@
             min-width: 0;
 
             .o_kline_price_wrap {
-                height: 320px;
+                height: 460px;
                 position: relative;
             }
             .o_kline_volume_wrap {
-                height: 90px;
+                height: 110px;
                 position: relative;
                 margin-top: 4px;
             }
         }
 
-        .o_stock_sim_stats {
-            flex: 0 0 240px;
+        .o_stock_sim_side {
+            flex: 0 0 290px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 10px;
 
-            .o_stat {
+            .o_stock_sim_stats {
                 display: flex;
                 flex-direction: column;
-                padding: 6px 10px;
-                background: #fafafa;
-                border-radius: 4px;
-                border: 1px solid #ececec;
+                gap: 6px;
 
-                .o_label {
+                .o_stat {
+                    display: flex;
+                    flex-direction: column;
+                    padding: 6px 10px;
+                    background: #fafafa;
+                    border-radius: 4px;
+                    border: 1px solid #ececec;
+
+                    .o_label {
+                        font-size: 11px;
+                        color: #888;
+                    }
+                    .o_value {
+                        font-size: 15px;
+                        font-weight: 600;
+                        color: #2b2b2b;
+                    }
+                    &.o_stat_total {
+                        background: #eef4fb;
+                        border-color: #cfe2f3;
+                        .o_value { font-size: 20px; color: #1a73e8; }
+                    }
+                    &.o_pos .o_value { color: #d33; }
+                    &.o_neg .o_value { color: #26a69a; }
+                }
+                .o_stat_row {
+                    display: flex;
+                    gap: 6px;
+                    .o_stat { flex: 1 1 0; }
+                }
+            }
+
+            .o_stock_sim_ratio {
+                .o_ratio_label {
+                    font-size: 13px;
+                    margin-bottom: 4px;
+                    b { color: #1a73e8; font-size: 16px; }
+                }
+                .o_ratio_quick {
+                    display: flex;
+                    gap: 4px;
+                    margin-bottom: 6px;
+                    button {
+                        flex: 1 1 0;
+                        padding: 5px 0;
+                        font-size: 12px;
+                        border: 1px solid #d0d0d0;
+                        background: #fff;
+                        border-radius: 3px;
+                        cursor: pointer;
+                        &:hover { background: #f0f0f0; }
+                    }
+                }
+                .o_ratio_hint {
                     font-size: 11px;
                     color: #888;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 2px;
                 }
-                .o_value {
-                    font-size: 15px;
-                    font-weight: 600;
-                    color: #2b2b2b;
-                }
-                &.o_stat_total {
-                    background: #eef4fb;
-                    border-color: #cfe2f3;
-                    .o_value { font-size: 20px; color: #1a73e8; }
-                }
-                &.o_pos .o_value { color: #d33; }
-                &.o_neg .o_value { color: #26a69a; }
             }
-            .o_stat_row {
+
+            .o_action_buttons {
                 display: flex;
+                flex-direction: column;
                 gap: 6px;
-                .o_stat { flex: 1 1 0; }
+                margin-top: auto;
+                .btn { width: 100%; }
             }
-        }
-    }
-
-    .o_stock_sim_controls {
-        display: flex;
-        gap: 16px;
-        padding: 12px;
-        background: #f5f3f2;
-        border-radius: 6px;
-        align-items: center;
-        flex-wrap: wrap;
-
-        .o_ratio_wrap {
-            flex: 1 1 320px;
-            min-width: 260px;
-
-            .o_ratio_label {
-                font-size: 13px;
-                margin-bottom: 4px;
-                b { color: #1a73e8; font-size: 16px; }
-            }
-            .o_ratio_slider {
-                width: 100%;
-                margin: 4px 0;
-            }
-            .o_ratio_quick {
-                display: flex;
-                gap: 4px;
-                margin-bottom: 4px;
-                button {
-                    padding: 2px 8px;
-                    font-size: 12px;
-                    border: 1px solid #d0d0d0;
-                    background: #fff;
-                    border-radius: 3px;
-                    cursor: pointer;
-                    &:hover { background: #f0f0f0; }
-                }
-            }
-            .o_ratio_hint {
-                font-size: 11px;
-                color: #888;
-                display: flex;
-                gap: 16px;
-            }
-        }
-
-        .o_action_buttons {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            .btn { min-width: 88px; }
         }
     }
 

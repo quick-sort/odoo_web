@@ -133,7 +133,7 @@
                         domain="[('state','=','running')]"/>
                 <filter name="filter_finished" string="已结束"
                         domain="[('state','=','finished')]"/>
-                <group expand="0" string="分组">
+                <group name="group_by">
                     <filter name="group_state" string="状态"
                             context="{'group_by': 'state'}"/>
                 </group>

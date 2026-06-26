@@ -58,7 +58,7 @@ export class StockSimBoard extends Component {
                 }
                 return () => this.destroyChart();
             },
-            () => [this.state.board]
+            () => [this.state.loading, this.state.board]
         );
 
         // fetch initial state; component renders a loading placeholder meanwhile
@@ -76,14 +76,38 @@ export class StockSimBoard extends Component {
         return "";
     }
 
-    /** 预估：按当前比例可动用的现金 / 可卖股数 */
-    get buyBudgetEstimate() {
-        if (!this.board) return 0;
-        return this.board.cash * this.state.ratio / 100;
+    /** 预估：当前比例下实际可买入的股数（与 action_buy 同口径：按手取整、扣买入费用）*/
+    get buyEstimate() {
+        const zero = { shares: 0, lots: 0 };
+        const b = this.board;
+        if (!b) return zero;
+        const cash = b.cash;
+        const price = b.close_price;
+        const lot = b.trade_lot || 100;
+        const ratio = this.state.ratio;
+        if (!price || price <= 0 || lot <= 0) return zero;
+        const budget = cash * ratio / 100;
+        // 与 action_buy 一致：先用预算/单价封顶，再向下取整到手数，最后扣买入费用
+        let shares = Math.floor(Math.floor(budget / price) / lot) * lot;
+        while (shares > 0) {
+            const gross = shares * price;
+            if (gross + this._buyFee(gross) <= cash + 1e-6) break;
+            shares -= lot;
+        }
+        return { shares, lots: Math.floor(shares / lot) };
     }
+
+    /** 预估：当前比例下可卖股数（与 action_sell 同口径）*/
     get sellSharesEstimate() {
         if (!this.board) return 0;
         return Math.floor(this.board.shares * this.state.ratio / 100);
+    }
+
+    _buyFee(gross) {
+        const b = this.board;
+        if (!b) return 0;
+        const commission = Math.max(gross * (b.commission_rate || 0), b.min_commission || 0);
+        return commission + gross * (b.transfer_fee_rate || 0);
     }
 
     async _loadState() {
@@ -118,9 +142,6 @@ export class StockSimBoard extends Component {
         return ok;
     }
 
-    onRatio(ev) {
-        this.state.ratio = parseInt(ev.target.value, 10) || 0;
-    }
     setRatio(v) {
         this.state.ratio = v;
     }
@@ -252,9 +273,6 @@ export class StockSimBoard extends Component {
     // ── 格式化（模板内调用）────────────────────────────────────
     fmtMoney(n) {
         return formatMoney(n);
-    }
-    fmtCompact(n) {
-        return compactMoney(n);
     }
     fmtPct(n) {
         return formatPercent(n);

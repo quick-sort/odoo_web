@@ -38,7 +38,7 @@ export class StockSimResultChart extends Component {
                 }
                 return () => this.destroyChart();
             },
-            () => [this.state.board]
+            () => [this.state.loading, this.state.board]
         );
 
         this._loadState();
