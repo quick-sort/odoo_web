@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
 
+<t t-name="web_widget_x2many_gantt.EmptyDialogButtons"/>
+
 <t t-name="web_widget_x2many_gantt.GanttField">
-    <div class="o_x2many_gantt">
+    <div t-att-class="'o_x2many_gantt' + (ganttData &amp;&amp; !ganttData.majorCells.length ? ' o_gantt_single_header' : '')">
 
         <!-- ── Empty state ────────────────────────────────────────── -->
         <t t-if="!ganttData">
@@ -18,7 +20,7 @@
             <!-- Scale toolbar -->
             <div class="o_gantt_toolbar">
                 <div class="btn-group btn-group-sm">
-                    <t t-foreach="['day', 'week', 'month']" t-as="s" t-key="s">
+                    <t t-foreach="['day', 'week', 'month', 'year']" t-as="s" t-key="s">
                         <button
                             t-att-class="{
                                 'btn': true,
@@ -34,37 +36,42 @@
                 <span class="o_gantt_legend text-muted small ms-3">
                     <i class="fa fa-circle o_gantt_today_dot me-1"/>Today
                 </span>
+                <t t-if="ganttData.legend &amp;&amp; ganttData.legend.length">
+                    <span class="o_gantt_legend o_gantt_color_legend small ms-3">
+                        <t t-foreach="ganttData.legend" t-as="item" t-key="item.key">
+                            <span class="o_gantt_legend_item me-2">
+                                <i class="fa fa-circle me-1" t-att-style="`color: ${item.color}`"/>
+                                <t t-esc="item.label"/>
+                            </span>
+                        </t>
+                    </span>
+                </t>
             </div>
 
-            <!-- Main layout: sidebar + scrollable timeline -->
+            <!-- Main layout: one scroll container, sticky sidebar + sticky header.
+                 Grid columns: [sidebar | timeline]; rows: [header | body].
+                 Sticky positioning keeps the label column pinned left and the
+                 time header pinned top, so vertical scroll moves labels and
+                 bars together without any JS sync. -->
             <div class="o_gantt_layout">
-
-                <!-- ── Left sidebar (task labels, sticky) ─────────── -->
-                <div class="o_gantt_sidebar">
-                    <!-- Header spacer (aligns with two-row header) -->
-                    <div class="o_gantt_sidebar_header"/>
-                    <!-- One label per record -->
-                    <t t-foreach="ganttData.rows" t-as="row" t-key="row.id">
-                        <div class="o_gantt_row_label" t-att-title="row.name">
-                            <span t-esc="row.name"/>
-                        </div>
-                    </t>
-                </div>
-
-                <!-- ── Scrollable timeline area ────────────────────── -->
                 <div class="o_gantt_scroll_area">
+
+                    <!-- Top-left corner spacer (sticky top + left) -->
+                    <div class="o_gantt_corner"/>
 
                     <!-- Two-row time header (sticky top) -->
                     <div class="o_gantt_header" t-att-style="`min-width: ${ganttData.totalPx}px`">
-                        <!-- Major row: months / years -->
-                        <div class="o_gantt_header_row o_gantt_header_major">
-                            <t t-foreach="ganttData.majorCells" t-as="cell" t-key="cell.key">
-                                <div class="o_gantt_header_cell"
-                                     t-att-style="`width: ${cell.width}px; min-width: ${cell.width}px`">
-                                    <t t-esc="cell.label"/>
-                                </div>
-                            </t>
-                        </div>
+                        <!-- Major row: months / years (hidden when empty, e.g. year scale) -->
+                        <t t-if="ganttData.majorCells.length">
+                            <div class="o_gantt_header_row o_gantt_header_major">
+                                <t t-foreach="ganttData.majorCells" t-as="cell" t-key="cell.key">
+                                    <div class="o_gantt_header_cell"
+                                         t-att-style="`width: ${cell.width}px; min-width: ${cell.width}px`">
+                                        <t t-esc="cell.label"/>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
                         <!-- Minor row: days / weeks / months -->
                         <div class="o_gantt_header_row o_gantt_header_minor">
                             <t t-foreach="ganttData.minorCells" t-as="cell" t-key="cell.key">
@@ -74,6 +81,18 @@
                                 </div>
                             </t>
                         </div>
+                    </div>
+
+                    <!-- Left sidebar: one label per record (sticky left) -->
+                    <div class="o_gantt_sidebar">
+                        <t t-foreach="ganttData.rows" t-as="row" t-key="row.id">
+                            <div class="o_gantt_row_label"
+                                 t-att-class="{ o_gantt_stripe: row_index % 2 === 1 }"
+                                 t-att-style="`height: ${rowHeight}px`"
+                                 t-att-title="row.name">
+                                <span t-esc="row.name"/>
+                            </div>
+                        </t>
                     </div>
 
                     <!-- Task bar area -->
@@ -88,7 +107,9 @@
 
                         <!-- One row per record -->
                         <t t-foreach="ganttData.rows" t-as="row" t-key="row.id">
-                            <div class="o_gantt_row" t-att-style="`height: ${rowHeight}px`">
+                            <div class="o_gantt_row"
+                                 t-att-class="{ o_gantt_stripe: row_index % 2 === 1 }"
+                                 t-att-style="`height: ${rowHeight}px`">
 
                                 <!-- Bar (only when dates are set) -->
                                 <t t-if="row.bar">

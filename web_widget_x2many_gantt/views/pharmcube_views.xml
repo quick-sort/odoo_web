@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         TA Form View（点击 Drug 甘特图 bar 后打开）
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <record id="view_pharmcube_drug_ta_form" model="ir.ui.view">
+        <field name="name">pharmcube.drug.ta.form</field>
+        <field name="model">pharmcube.drug.ta</field>
+        <field name="arch" type="xml">
+            <form string="疾病领域临床进度" edit="0">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="疾病领域"/>
+                        <h1><field name="name" readonly="1"/></h1>
+                        <h3><field name="drug_id" readonly="1"/></h3>
+                    </div>
+                    <group>
+                        <field name="date_start" readonly="1"/>
+                        <field name="date_end" readonly="1"/>
+                        <field name="indication_top_global_latest_stage" readonly="1"/>
+                        <field name="tracking_count" string="试验记录数" readonly="1"/>
+                    </group>
+                    <notebook>
+                        <page string="临床试验甘特图" name="tracking_gantt">
+                            <field name="tracking_ids"
+                                   widget="x2many_gantt"
+                                   date_start="start_datetime"
+                                   date_end="completion_date"
+                                   name_field="display_name"
+                                   color_field="phase_revised"
+                                   default_scale="month"
+                                   bar_clickable="1"
+                                   tooltip_fields="harbour_indication_name,phase_revised,overall_status_cn,nct_id,start_datetime,completion_date,ispivotal"
+                                   nolabel="1">
+                                <list>
+                                    <field name="display_name"/>
+                                    <field name="harbour_indication_name"/>
+                                    <field name="phase_revised"/>
+                                    <field name="overall_status_cn"/>
+                                    <field name="start_datetime"/>
+                                    <field name="completion_date"/>
+                                    <field name="nct_id"/>
+                                    <field name="ispivotal"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="试验明细" name="tracking_list">
+                            <field name="tracking_ids" nolabel="1">
+                                <list default_order="start_datetime">
+                                    <field name="harbour_indication_name"/>
+                                    <field name="phase_revised"/>
+                                    <field name="overall_status_cn"/>
+                                    <field name="start_datetime"/>
+                                    <field name="completion_date"/>
+                                    <field name="nct_id"/>
+                                    <field name="ispivotal"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         TA List / Search View（独立）
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <record id="view_pharmcube_drug_ta_list" model="ir.ui.view">
+        <field name="name">pharmcube.drug.ta.list</field>
+        <field name="model">pharmcube.drug.ta</field>
+        <field name="arch" type="xml">
+            <list string="疾病领域" default_order="drug_id, name">
+                <field name="drug_id"/>
+                <field name="name"/>
+                <field name="phase_start"/>
+                <field name="phase_end"/>
+                <field name="indication_top_global_latest_stage"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="tracking_count" string="试验数"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_pharmcube_drug_ta_search" model="ir.ui.view">
+        <field name="name">pharmcube.drug.ta.search</field>
+        <field name="model">pharmcube.drug.ta</field>
+        <field name="arch" type="xml">
+            <search string="搜索疾病领域">
+                <field name="name"/>
+                <field name="drug_id"/>
+                <filter name="group_by_drug" string="按药品"
+                        context="{'group_by': 'drug_id'}"/>
+                <filter name="group_by_phase_end" string="按最高阶段"
+                        context="{'group_by': 'phase_end'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_pharmcube_drug_ta" model="ir.actions.act_window">
+        <field name="name">疾病领域临床进度</field>
+        <field name="res_model">pharmcube.drug.ta</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_pharmcube_drug_ta_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                暂无疾病领域数据。请执行数据同步。
+            </p>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         Tracking Form View（弹窗）
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <record id="view_pharmcube_tracking_form" model="ir.ui.view">
+        <field name="name">pharmcube.tracking.form</field>
+        <field name="model">pharmcube.tracking</field>
+        <field name="arch" type="xml">
+            <form string="临床试验追踪详情" edit="0">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="harbour_indication_name" placeholder="适应症"/></h1>
+                        <h3><field name="pharmcube_drug_id" readonly="1"/></h3>
+                    </div>
+
+                    <group>
+                        <group string="基本信息">
+                            <field name="phase_revised"/>
+                            <field name="overall_status_cn"/>
+                            <field name="nct_id"/>
+                            <field name="ispivotal"/>
+                            <field name="harbour_disease_area"/>
+                            <field name="data_source"/>
+                        </group>
+                        <group string="时间">
+                            <field name="start_datetime"/>
+                            <field name="completion_date"/>
+                            <field name="first_posted_date"/>
+                        </group>
+                    </group>
+
+                    <group string="入组信息">
+                        <field name="target_population"/>
+                        <field name="actual_enrollment_global"/>
+                        <field name="anticipated_enrollment_global"/>
+                        <field name="intervention"/>
+                    </group>
+
+                    <group string="试验标题与终点">
+                        <field name="title"/>
+                        <field name="trial_url" widget="url"/>
+                        <field name="pri_outcome_measures"/>
+                        <field name="sec_outcome_measures"/>
+                    </group>
+
+                    <group string="结果摘要">
+                        <field name="outcome"/>
+                        <field name="summary"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         Drug Form View（主视图）
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <record id="view_pharmcube_drug_form" model="ir.ui.view">
+        <field name="name">pharmcube.drug.form</field>
+        <field name="model">pharmcube.drug</field>
+        <field name="arch" type="xml">
+            <form string="药品临床开发进度" edit="0">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="drug_name_cn" string="药品名称"/>
+                        <h1>
+                            <field name="drug_name_cn" placeholder="药品名称（中文）"/>
+                        </h1>
+                        <h3>
+                            <field name="drug_name_en" placeholder="Drug Name (EN)"/>
+                        </h3>
+                    </div>
+
+                    <group>
+                        <group string="基本信息">
+                            <field name="originator"/>
+                            <field name="targets"/>
+                            <field name="moa"/>
+                            <field name="global_highest_phase"/>
+                        </group>
+                        <group string="概览">
+                            <field name="tracking_count" string="适应症/试验记录数"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+
+                        <page string="按疾病领域甘特图" name="ta_gantt">
+                            <div class="text-muted small mb-2">
+                                每条代表一个疾病领域，时间跨度取该领域所有试验的最早启动至最晚完成。点击条块可查看该疾病领域的试验甘特图。
+                            </div>
+                            <field name="ta_ids"
+                                   widget="x2many_gantt"
+                                   date_start="date_start"
+                                   date_end="date_end"
+                                   name_field="bar_label"
+                                   color_field="phase_end"
+                                   default_scale="month"
+                                   bar_clickable="1"
+                                   tooltip_fields="name,phase_start,phase_end,date_start,date_end,tracking_count"
+                                   nolabel="1">
+                                <list>
+                                    <field name="bar_label" string="疾病领域"/>
+                                    <field name="phase_start"/>
+                                    <field name="phase_end"/>
+                                    <field name="date_start"/>
+                                    <field name="date_end"/>
+                                    <field name="tracking_count" string="试验数"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="疾病领域明细" name="ta_list">
+                            <field name="ta_ids" nolabel="1">
+                                <list default_order="name">
+                                    <field name="name" string="疾病领域"/>
+                                    <field name="phase_start"/>
+                                    <field name="phase_end"/>
+                                    <field name="indication_top_global_latest_stage"/>
+                                    <field name="date_start"/>
+                                    <field name="date_end"/>
+                                    <field name="tracking_count" string="试验数"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="试验明细" name="tracking_list">
+                            <field name="tracking_ids" nolabel="1">
+                                <list default_order="start_datetime">
+                                    <field name="harbour_indication_name"/>
+                                    <field name="phase_revised"/>
+                                    <field name="overall_status_cn"/>
+                                    <field name="start_datetime"/>
+                                    <field name="completion_date"/>
+                                    <field name="nct_id"/>
+                                    <field name="ispivotal"/>
+                                    <field name="actual_enrollment_global"/>
+                                </list>
+                            </field>
+                        </page>
+
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         Drug List View
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <record id="view_pharmcube_drug_list" model="ir.ui.view">
+        <field name="name">pharmcube.drug.list</field>
+        <field name="model">pharmcube.drug</field>
+        <field name="arch" type="xml">
+            <list string="药品列表">
+                <field name="drug_name_cn"/>
+                <field name="drug_name_en"/>
+                <field name="originator"/>
+                <field name="targets"/>
+                <field name="global_highest_phase"/>
+                <field name="tracking_count" string="记录数"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         Drug Search View
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <record id="view_pharmcube_drug_search" model="ir.ui.view">
+        <field name="name">pharmcube.drug.search</field>
+        <field name="model">pharmcube.drug</field>
+        <field name="arch" type="xml">
+            <search string="搜索药品">
+                <field name="drug_name_cn"/>
+                <field name="drug_name_en"/>
+                <field name="originator"/>
+                <field name="targets"/>
+                <filter name="group_by_originator" string="按原研企业"
+                        context="{'group_by': 'originator'}"/>
+                <filter name="group_by_phase" string="按最高阶段"
+                        context="{'group_by': 'global_highest_phase'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         Tracking List View（独立）
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <record id="view_pharmcube_tracking_list" model="ir.ui.view">
+        <field name="name">pharmcube.tracking.list</field>
+        <field name="model">pharmcube.tracking</field>
+        <field name="arch" type="xml">
+            <list string="临床试验追踪" default_order="start_datetime">
+                <field name="pharmcube_drug_id"/>
+                <field name="harbour_indication_name"/>
+                <field name="harbour_disease_area"/>
+                <field name="phase_revised"/>
+                <field name="overall_status_cn"/>
+                <field name="nct_id"/>
+                <field name="ispivotal"/>
+                <field name="start_datetime"/>
+                <field name="completion_date"/>
+                <field name="actual_enrollment_global"/>
+                <field name="data_source"/>
+                <field name="glue_sync_date" string="同步时间"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_pharmcube_tracking_search" model="ir.ui.view">
+        <field name="name">pharmcube.tracking.search</field>
+        <field name="model">pharmcube.tracking</field>
+        <field name="arch" type="xml">
+            <search string="搜索临床试验">
+                <field name="pharmcube_drug_id"/>
+                <field name="harbour_indication_name"/>
+                <field name="nct_id"/>
+                <field name="phase_revised"/>
+                <field name="overall_status_cn"/>
+                <filter name="pivotal" string="关键试验" domain="[('ispivotal', '=', True)]"/>
+                <filter name="group_by_drug" string="按药品"
+                        context="{'group_by': 'pharmcube_drug_id'}"/>
+                <filter name="group_by_phase" string="按研发阶段"
+                        context="{'group_by': 'phase_revised'}"/>
+                <filter name="group_by_status" string="按试验状态"
+                        context="{'group_by': 'overall_status_cn'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_pharmcube_tracking" model="ir.actions.act_window">
+        <field name="name">临床试验追踪记录</field>
+        <field name="res_model">pharmcube.tracking</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_pharmcube_tracking_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                暂无追踪数据。请执行数据同步。
+            </p>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         Action + 菜单
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <record id="action_pharmcube_drug" model="ir.actions.act_window">
+        <field name="name">药品临床进度（PharmCube）</field>
+        <field name="res_model">pharmcube.drug</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_pharmcube_drug_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                暂无药品数据。请在 AWS Glue 配置中对 pharmcube_clinical_trial_tracking 表执行数据同步。
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_pharmcube_root"
+              name="临床进度（PharmCube 甘特图）"
+              sequence="91"/>
+
+    <menuitem id="menu_pharmcube_drug"
+              name="药品临床进度"
+              parent="menu_pharmcube_root"
+              action="action_pharmcube_drug"
+              sequence="10"/>
+
+    <menuitem id="menu_pharmcube_drug_ta"
+              name="疾病领域进度"
+              parent="menu_pharmcube_root"
+              action="action_pharmcube_drug_ta"
+              sequence="15"/>
+
+    <menuitem id="menu_pharmcube_tracking"
+              name="试验追踪记录"
+              parent="menu_pharmcube_root"
+              action="action_pharmcube_tracking"
+              sequence="20"/>
+
+</odoo>

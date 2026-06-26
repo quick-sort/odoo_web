@@ -1,5 +1,5 @@
 .o_x2many_gantt {
-    --gantt-sidebar-width: 120px;
+    --gantt-sidebar-width: 240px;
     --gantt-row-height: 36px;
     --gantt-header-major-height: 26px;
     --gantt-header-minor-height: 26px;
@@ -12,6 +12,8 @@
     --gantt-bar-height: 24px;
 
     font-size: 12px;
+    width: 100%;
+    min-width: 0;
     border: 1px solid var(--gantt-border-color);
     border-radius: 4px;
     overflow: hidden;
@@ -29,6 +31,8 @@
     .o_gantt_toolbar {
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
+        gap: 4px 0;
         padding: 6px 10px;
         border-bottom: 1px solid var(--gantt-border-color);
         background: #f8f9fa;
@@ -37,30 +41,64 @@
             color: var(--gantt-today-color);
             font-size: 10px;
         }
+
+        .o_gantt_color_legend {
+            display: inline-flex;
+            flex-wrap: wrap;
+            align-items: center;
+
+            .o_gantt_legend_item {
+                white-space: nowrap;
+
+                .fa-circle {
+                    font-size: 10px;
+                }
+            }
+        }
     }
 
     // ── Layout ────────────────────────────────────────────────────────
     .o_gantt_layout {
-        display: flex;
+        min-width: 0;
         overflow: hidden;
-        max-height: 500px;  // Outer height cap; inner areas scroll
     }
 
-    // ── Sidebar ───────────────────────────────────────────────────────
-    .o_gantt_sidebar {
-        width: var(--gantt-sidebar-width);
-        min-width: var(--gantt-sidebar-width);
-        flex-shrink: 0;
-        border-right: 2px solid var(--gantt-border-color);
-        overflow: hidden;
-        background: #fff;
-        z-index: 2;
+    // ── Scroll area ───────────────────────────────────────────────────
+    // A single scroll container holding a 2×2 grid: the sidebar column and
+    // the time-header row are kept in view with position: sticky, so the
+    // label column scrolls vertically together with the bars (no JS sync).
+    .o_gantt_scroll_area {
+        width: 100%;
+        min-width: 0;
+        max-height: 500px;
+        overflow: auto;
+        position: relative;
+        display: grid;
+        // Second track is flexible (capped at the container) so the grid never
+        // grows wider than the form; the header/body keep their min-width and
+        // overflow horizontally inside this scroll container instead.
+        grid-template-columns: var(--gantt-sidebar-width) minmax(0, 1fr);
+        align-content: start;
+    }
 
-        .o_gantt_sidebar_header {
-            height: var(--gantt-header-height);
-            background: #f1f3f5;
-            border-bottom: 1px solid var(--gantt-border-color);
-        }
+    // ── Top-left corner (sticky top + left) ───────────────────────────
+    .o_gantt_corner {
+        position: sticky;
+        top: 0;
+        left: 0;
+        z-index: 3;
+        background: #f1f3f5;
+        border-right: 2px solid var(--gantt-border-color);
+        border-bottom: 2px solid var(--gantt-border-color);
+    }
+
+    // ── Sidebar (sticky left) ─────────────────────────────────────────
+    .o_gantt_sidebar {
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        border-right: 2px solid var(--gantt-border-color);
+        background: #fff;
 
         .o_gantt_row_label {
             height: var(--gantt-row-height);
@@ -73,18 +111,10 @@
             font-size: 12px;
             color: #343a40;
 
-            &:nth-child(odd) {
+            &.o_gantt_stripe {
                 background: var(--gantt-row-bg-alt);
             }
         }
-    }
-
-    // ── Scroll area ───────────────────────────────────────────────────
-    .o_gantt_scroll_area {
-        flex: 1;
-        overflow-x: auto;
-        overflow-y: auto;
-        position: relative;
     }
 
     // ── Header ───────────────────────────────────────────────────────
@@ -93,7 +123,7 @@
         flex-direction: column;
         position: sticky;
         top: 0;
-        z-index: 1;
+        z-index: 2;
         background: #f1f3f5;
         border-bottom: 2px solid var(--gantt-border-color);
 
@@ -140,7 +170,6 @@
     .o_gantt_body {
         position: relative;
 
-        // Today vertical line
         .o_gantt_today_line {
             position: absolute;
             top: 0;
@@ -152,18 +181,16 @@
             pointer-events: none;
         }
 
-        // Task rows
         .o_gantt_row {
             position: relative;
             border-bottom: 1px solid var(--gantt-grid-color);
             box-sizing: border-box;
 
-            &:nth-child(odd) {
+            &.o_gantt_stripe {
                 background: var(--gantt-row-bg-alt);
             }
         }
 
-        // Gantt bars
         .o_gantt_bar {
             position: absolute;
             top: calc((var(--gantt-row-height) - var(--gantt-bar-height)) / 2);

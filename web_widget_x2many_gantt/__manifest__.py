@@ -29,10 +29,11 @@
         - name_field (optional): field name for task label (default: "name")
         - default_scale (optional): day / week / month (default: week)
     """,
-    "depends": ["web"],
+    "depends": ["web", "aws_glue"],
     "data": [
         "security/ir.model.access.csv",
         "views/gantt_example_views.xml",
+        "views/pharmcube_views.xml",
     ],
     "demo": [
         "demo/gantt_example_demo.xml",
@@ -47,4 +48,5 @@
     "installable": True,
     "auto_install": False,
     "application": True,
+    "post_init_hook": "post_init_hook",
 }
