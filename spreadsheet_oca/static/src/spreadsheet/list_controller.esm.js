@@ -1,9 +1,25 @@
-import {ListController} from "@web/views/list/list_controller";
+import {Component} from "@odoo/owl";
+import {DropdownItem} from "@web/core/dropdown/dropdown_item";
+import {registry} from "@web/core/registry";
 
-import {patch} from "@web/core/utils/patch";
+const cogMenuRegistry = registry.category("cogMenu");
 
-patch(ListController.prototype, {
-    onSpreadsheetButtonClicked() {
+export class AddToSpreadsheet extends Component {
+    static template = "spreadsheet_oca.AddToSpreadsheet";
+    static components = {DropdownItem};
+    static props = {};
+
+    onAddToSpreadsheet() {
         this.env.bus.trigger("addListOnSpreadsheet");
+    }
+}
+
+cogMenuRegistry.add(
+    "spreadsheet-oca-list-menu",
+    {
+        Component: AddToSpreadsheet,
+        groupNumber: 20,
+        isDisplayed: ({config, isSmall}) => !isSmall && config.viewType === "list",
     },
-});
+    {sequence: 20}
+);
