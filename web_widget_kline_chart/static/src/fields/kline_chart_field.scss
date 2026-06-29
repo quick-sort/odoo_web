@@ -19,6 +19,58 @@
         }
     }
 
+    .o_kline_indicators {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        z-index: 2;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        justify-content: flex-end;
+        max-width: 72%;
+    }
+
+    .o_kline_ind_chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 1px 8px;
+        font-size: 12px;
+        line-height: 1.6;
+        color: rgba(0, 0, 0, 0.38);
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        border-radius: 10px;
+        cursor: pointer;
+        opacity: 0.6;
+        &:hover {
+            opacity: 0.85;
+        }
+        &.o_kline_ind_on {
+            color: rgba(0, 0, 0, 0.85);
+            background: rgba(255, 255, 255, 0.95);
+            opacity: 1;
+        }
+    }
+
+    .o_kline_ind_dot {
+        display: inline-block;
+        flex: 0 0 auto;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    // Volume-panel chip bar: anchored to the top-left of the volume wrap so it
+    // does not collide with the price indicators at the top-right.
+    .o_kline_indicators_vol {
+        top: 2px;
+        right: auto;
+        left: 4px;
+        max-width: none;
+    }
+
     .o_kline_price_wrap,
     .o_kline_volume_wrap {
         position: relative;

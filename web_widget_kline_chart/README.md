@@ -44,6 +44,33 @@ Configure the rendering with the standard field `options` attribute:
 />
 ```
 
+### Technical indicators (MA / BOLL)
+
+The price chart can overlay **moving averages** (`ma`) and **Bollinger Bands**
+(`boll`). Each configured indicator gets a toggle chip in the top-right corner
+of the chart, so end users show/hide them at runtime without editing the view.
+
+```xml
+<field
+    name="kline_data"
+    widget="kline_chart"
+    options="{
+        'ma': [5, 10, 20, 60],
+        'boll': {'period': 20, 'std_dev': 2},
+        'volume_ma': [5, 20],
+    }"
+/>
+```
+
+- `ma` — list of SMA periods on the price chart. An empty list hides MA.
+- `boll` — `{period, std_dev}` for the bands, or `null`/`false` to hide BOLL.
+- `volume_ma` — list of SMA periods on the volume sub-chart (e.g. `[5, 20]`).
+
+MA and volume-MA lines are shown by default; BOLL is available but toggled off
+by default. Each indicator has its own toggle chip — price indicators sit at the
+top-right of the price chart, volume indicators at the top-left of the volume
+panel. Toggling redraws only the overlaid lines and preserves the zoom/pan.
+
 ## Data format
 
 The `json` field holds the OHLCV series. Two shapes are accepted:
@@ -90,6 +117,12 @@ drawn on the price chart).
 | `volume_down_color` | `"rgba(239, 83, 80, 0.6)"`                | Volume bar colour on down days.                                             |
 | `height`            | `440`                                     | Total chart height in pixels.                                               |
 | `show_volume`       | `True`                                    | Render the volume sub-chart.                                                |
+| `ma`                | `[5, 10, 20, 60]`                         | Moving-average periods to plot on the price chart. `[]` disables MA.        |
+| `ma_colors`         | `["#f5a623", "#4a90e2", "#bd10e0", "#e91e63"]` | Colour per MA period (cycled through a palette if fewer are given).    |
+| `boll`              | `{"period": 20, "std_dev": 2}`            | Bollinger Bands config. `null`/`false` disables BOLL.                       |
+| `boll_color`        | `"#7e57c2"`                               | Colour for the BOLL upper/middle/lower lines and band fill.                 |
+| `volume_ma`         | `[5, 20]`                                 | Moving-average periods overlaid on the volume sub-chart. `[]` disables.     |
+| `volume_ma_colors`  | `["#ff9800", "#5e35b1"]`                  | Colour per volume MA period (cycled through a palette if fewer are given).  |
 
 ## How it works
 

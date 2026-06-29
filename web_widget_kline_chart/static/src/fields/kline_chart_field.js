@@ -1,6 +1,6 @@
 /** @odoo-module */
 
-import { Component, onWillUnmount, useEffect, useRef } from "@odoo/owl";
+import { Component, onWillUnmount, useEffect, useRef, useState } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 import { _t } from "@web/core/l10n/translation";
@@ -19,7 +19,21 @@ const DEFAULTS = {
     volume_down_color: "rgba(239, 83, 80, 0.6)",
     height: 440,
     show_volume: true,
+    // Technical indicators overlaid on the price chart. Each entry adds a
+    // toggle chip to the chart; the user can show/hide them at runtime.
+    // MA: list of moving-average periods (empty list disables MA entirely).
+    ma: [5, 10, 20, 60],
+    ma_colors: ["#f5a623", "#4a90e2", "#bd10e0", "#e91e63"],
+    // BOLL: { period, std_dev } or null/false to disable.
+    boll: { period: 20, std_dev: 2 },
+    boll_color: "#7e57c2",
+    // Moving averages overlaid on the volume sub-chart (empty list disables).
+    volume_ma: [5, 20],
+    volume_ma_colors: ["#ff9800", "#5e35b1"],
 };
+
+// Colour palette cycled through when ``ma_colors`` does not cover a period.
+const MA_PALETTE = ["#f5a623", "#4a90e2", "#bd10e0", "#e91e63", "#7ed321"];
 
 // Fixed width reserved for the right-hand value axis so the plot areas of the
 // price chart and the volume chart line up vertically (same x positions).
@@ -82,6 +96,77 @@ function _fmtDate(d) {
     return `${d.getFullYear()}-${mm}-${dd}`;
 }
 
+function formatPrice(n) {
+    if (n == null || isNaN(n)) return "";
+    return Number(n).toFixed(2);
+}
+
+// Convert a #rgb / #rrggbb colour to an rgba() string with the given alpha.
+function withAlpha(hex, alpha) {
+    let h = String(hex || "#000000").replace("#", "").trim();
+    if (h.length === 3) {
+        h = h
+            .split("")
+            .map((c) => c + c)
+            .join("");
+    }
+    if (h.length !== 6 || /[^0-9a-fA-F]/.test(h)) {
+        return hex;
+    }
+    const r = parseInt(h.slice(0, 2), 16);
+    const g = parseInt(h.slice(2, 4), 16);
+    const b = parseInt(h.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+// Simple moving average as sparse {x, y} points (one per fully covered bar).
+// x is the category index, matching the candlestick dataset's own x indices.
+function smaPoints(values, period) {
+    const points = [];
+    if (!period || period < 1) {
+        return points;
+    }
+    let sum = 0;
+    for (let i = 0; i < values.length; i++) {
+        sum += values[i];
+        if (i >= period) {
+            sum -= values[i - period];
+        }
+        if (i >= period - 1) {
+            points.push({ x: i, y: sum / period });
+        }
+    }
+    return points;
+}
+
+// Bollinger Bands: middle = SMA(period), upper/lower = middle ± k * stddev.
+// Returns three sparse point arrays aligned to the same category indices.
+function bollPoints(values, period, k) {
+    const up = [];
+    const mid = [];
+    const low = [];
+    if (!period || period < 2) {
+        return { up, mid, low };
+    }
+    for (let i = period - 1; i < values.length; i++) {
+        let sum = 0;
+        for (let j = i - period + 1; j <= i; j++) {
+            sum += values[j];
+        }
+        const mean = sum / period;
+        let variance = 0;
+        for (let j = i - period + 1; j <= i; j++) {
+            const d = values[j] - mean;
+            variance += d * d;
+        }
+        const sd = Math.sqrt(variance / period);
+        mid.push({ x: i, y: mean });
+        up.push({ x: i, y: mean + k * sd });
+        low.push({ x: i, y: mean - k * sd });
+    }
+    return { up, mid, low };
+}
+
 export class KlineChartField extends Component {
     setup() {
         this.rootRef = useRef("root");
@@ -95,6 +180,11 @@ export class KlineChartField extends Component {
         // Index currently mirrored to the other chart, so hover sync only
         // redraws when the hovered candle actually changes.
         this._lastSyncIndex = null;
+
+        // Per-indicator show/hide state. Keys are "ma:<period>" or "boll".
+        // MA lines are on by default; BOLL is available but off by default so
+        // the chart is not cluttered until the user opts in.
+        this.ui = useState(this._initialIndicatorState());
 
         useEffect(
             () => {
@@ -121,6 +211,88 @@ export class KlineChartField extends Component {
 
     get containerStyle() {
         return `height:${this.opts.height}px;`;
+    }
+
+    get hasIndicators() {
+        const o = this.opts;
+        return (Array.isArray(o.ma) && o.ma.length > 0) || !!o.boll;
+    }
+
+    // List of toggle chips rendered above the chart. Each chip carries its
+    // toggle key, display label, line colour and current on/off state.
+    get indicatorToggles() {
+        const o = this.opts;
+        const list = [];
+        const periods = Array.isArray(o.ma) ? o.ma : [];
+        periods.forEach((period, i) => {
+            const color = (o.ma_colors && o.ma_colors[i]) || MA_PALETTE[i % MA_PALETTE.length];
+            list.push({
+                key: `ma:${period}`,
+                label: `MA${period}`,
+                color,
+                dotStyle: `background:${color};`,
+                on: !!this.ui[`ma:${period}`],
+            });
+        });
+        if (o.boll) {
+            list.push({
+                key: "boll",
+                label: `BOLL(${o.boll.period},${o.boll.std_dev})`,
+                color: o.boll_color,
+                dotStyle: `background:${o.boll_color};`,
+                on: !!this.ui.boll,
+            });
+        }
+        return list;
+    }
+
+    get hasVolumeIndicators() {
+        return this.showVolume && Array.isArray(this.opts.volume_ma) && this.opts.volume_ma.length > 0;
+    }
+
+    // Toggle chips for the volume sub-chart (rendered on the volume panel).
+    get volumeIndicatorToggles() {
+        const o = this.opts;
+        const list = [];
+        const periods = Array.isArray(o.volume_ma) ? o.volume_ma : [];
+        periods.forEach((period, i) => {
+            const color =
+                (o.volume_ma_colors && o.volume_ma_colors[i]) || MA_PALETTE[i % MA_PALETTE.length];
+            list.push({
+                key: `volma:${period}`,
+                label: `VOLMA${period}`,
+                color,
+                dotStyle: `background:${color};`,
+                on: !!this.ui[`volma:${period}`],
+            });
+        });
+        return list;
+    }
+
+    _initialIndicatorState() {
+        const o = this.opts;
+        const state = {};
+        const periods = Array.isArray(o.ma) ? o.ma : [];
+        for (const period of periods) {
+            state[`ma:${period}`] = true;
+        }
+        if (o.boll) {
+            state.boll = false;
+        }
+        const volPeriods = Array.isArray(o.volume_ma) ? o.volume_ma : [];
+        for (const period of volPeriods) {
+            state[`volma:${period}`] = true;
+        }
+        return state;
+    }
+
+    toggleIndicator(key) {
+        this.ui[key] = !this.ui[key];
+        if (key.startsWith("volma:")) {
+            this._applyVolumeIndicators();
+        } else {
+            this._applyIndicators();
+        }
     }
 
     _rawData() {
@@ -182,6 +354,144 @@ export class KlineChartField extends Component {
         return { labels, candles, volumes, volumeColors };
     }
 
+    // Build the overlaid line datasets for the currently enabled indicators.
+    // Lines use parsing:false with {x: categoryIndex, y: value} so they share
+    // the candlestick dataset's coordinate space and line up with each candle.
+    _buildIndicatorDatasets(candles) {
+        const o = this.opts;
+        const datasets = [];
+        const closes = candles.map((c) => c.c);
+
+        const periods = Array.isArray(o.ma) ? o.ma : [];
+        periods.forEach((period, i) => {
+            if (!this.ui[`ma:${period}`]) {
+                return;
+            }
+            const color = (o.ma_colors && o.ma_colors[i]) || MA_PALETTE[i % MA_PALETTE.length];
+            datasets.push({
+                type: "line",
+                label: `MA${period}`,
+                data: smaPoints(closes, period),
+                parsing: false,
+                borderColor: color,
+                backgroundColor: color,
+                borderWidth: 1.2,
+                pointRadius: 0,
+                pointHoverRadius: 0,
+                tension: 0,
+            });
+        });
+
+        if (o.boll && this.ui.boll) {
+            const { up, mid, low } = bollPoints(closes, o.boll.period, o.boll.std_dev);
+            const color = o.boll_color;
+            // Order matters: upper is pushed before low so upper.fill "+1"
+            // targets the immediately following lower band, painting the band
+            // regardless of how many MA datasets precede it.
+            datasets.push({
+                type: "line",
+                label: _t("BOLL Up"),
+                data: up,
+                parsing: false,
+                borderColor: color,
+                backgroundColor: withAlpha(color, 0.08),
+                borderWidth: 1,
+                pointRadius: 0,
+                pointHoverRadius: 0,
+                tension: 0,
+                fill: "+1",
+            });
+            datasets.push({
+                type: "line",
+                label: _t("BOLL Low"),
+                data: low,
+                parsing: false,
+                borderColor: color,
+                backgroundColor: withAlpha(color, 0.08),
+                borderWidth: 1,
+                pointRadius: 0,
+                pointHoverRadius: 0,
+                tension: 0,
+            });
+            datasets.push({
+                type: "line",
+                label: _t("BOLL Mid"),
+                data: mid,
+                parsing: false,
+                borderColor: color,
+                backgroundColor: color,
+                borderWidth: 1,
+                pointRadius: 0,
+                pointHoverRadius: 0,
+                tension: 0,
+                borderDash: [4, 4],
+            });
+        }
+
+        return datasets;
+    }
+
+    // Re-apply indicator datasets without rebuilding the chart, so toggling a
+    // line on/off keeps the current zoom/pan range. The candlestick dataset
+    // (always index 0) is left untouched; only the trailing line datasets are
+    // rebuilt.
+    _applyIndicators() {
+        if (!this.priceChart) {
+            return;
+        }
+        const { candles } = this._buildSeries();
+        const datasets = this.priceChart.data.datasets;
+        datasets.length = 1;
+        for (const ds of this._buildIndicatorDatasets(candles)) {
+            datasets.push(ds);
+        }
+        this.priceChart.update("none");
+    }
+
+    // Line datasets for the volume sub-chart: moving averages of the volume
+    // series. Same parsing:false + {x, y} scheme so they line up with the
+    // volume bars (the bar dataset keeps its default label-based parsing).
+    _buildVolumeIndicatorDatasets(volumes) {
+        const o = this.opts;
+        const datasets = [];
+        const periods = Array.isArray(o.volume_ma) ? o.volume_ma : [];
+        periods.forEach((period, i) => {
+            if (!this.ui[`volma:${period}`]) {
+                return;
+            }
+            const color =
+                (o.volume_ma_colors && o.volume_ma_colors[i]) || MA_PALETTE[i % MA_PALETTE.length];
+            datasets.push({
+                type: "line",
+                label: `VOLMA${period}`,
+                data: smaPoints(volumes, period),
+                parsing: false,
+                borderColor: color,
+                backgroundColor: color,
+                borderWidth: 1.2,
+                pointRadius: 0,
+                pointHoverRadius: 0,
+                tension: 0,
+            });
+        });
+        return datasets;
+    }
+
+    // Re-apply volume MA datasets without rebuilding the volume chart, so the
+    // toggle keeps the current zoom/pan. The bar dataset (index 0) is kept.
+    _applyVolumeIndicators() {
+        if (!this.volumeChart) {
+            return;
+        }
+        const { volumes } = this._buildSeries();
+        const datasets = this.volumeChart.data.datasets;
+        datasets.length = 1;
+        for (const ds of this._buildVolumeIndicatorDatasets(volumes)) {
+            datasets.push(ds);
+        }
+        this.volumeChart.update("none");
+    }
+
     renderChart() {
         this.destroyChart();
         this._lastSyncIndex = null;
@@ -216,28 +526,30 @@ export class KlineChartField extends Component {
         });
 
         if (this.priceCanvasRef.el) {
+            const priceDatasets = [
+                {
+                    label: _t("Price"),
+                    data: candles,
+                    parsing: false,
+                    backgroundColors: {
+                        up: o.up_color,
+                        down: o.down_color,
+                        unchanged: o.up_color,
+                    },
+                    borderColors: {
+                        up: o.up_color,
+                        down: o.down_color,
+                        unchanged: o.up_color,
+                    },
+                    borderWidth: 1,
+                },
+                ...this._buildIndicatorDatasets(candles),
+            ];
             this.priceChart = new ChartLib(this.priceCanvasRef.el, {
                 type: "candlestick",
                 data: {
                     labels: labels,
-                    datasets: [
-                        {
-                            label: _t("Price"),
-                            data: candles,
-                            parsing: false,
-                            backgroundColors: {
-                                up: o.up_color,
-                                down: o.down_color,
-                                unchanged: o.up_color,
-                            },
-                            borderColors: {
-                                up: o.up_color,
-                                down: o.down_color,
-                                unchanged: o.up_color,
-                            },
-                            borderWidth: 1,
-                        },
-                    ],
+                    datasets: priceDatasets,
                 },
                 options: {
                     responsive: true,
@@ -262,19 +574,21 @@ export class KlineChartField extends Component {
         }
 
         if (this.showVolume && this.volumeCanvasRef.el) {
+            const volumeDatasets = [
+                {
+                    label: _t("Volume"),
+                    data: volumes,
+                    backgroundColor: volumeColors,
+                    borderWidth: 0,
+                    maxBarThickness: 14,
+                },
+                ...this._buildVolumeIndicatorDatasets(volumes),
+            ];
             this.volumeChart = new ChartLib(this.volumeCanvasRef.el, {
                 type: "bar",
                 data: {
                     labels: labels,
-                    datasets: [
-                        {
-                            label: _t("Volume"),
-                            data: volumes,
-                            backgroundColor: volumeColors,
-                            borderWidth: 0,
-                            maxBarThickness: 14,
-                        },
-                    ],
+                    datasets: volumeDatasets,
                 },
                 options: {
                     responsive: true,
@@ -309,13 +623,22 @@ export class KlineChartField extends Component {
             callbacks: {
                 label: (ctx) => {
                     const d = ctx.raw;
-                    if (!d) return "";
-                    return [
-                        `${_t("Open")}: ${d.o}`,
-                        `${_t("High")}: ${d.h}`,
-                        `${_t("Low")}: ${d.l}`,
-                        `${_t("Close")}: ${d.c}`,
-                    ];
+                    if (!d) {
+                        return "";
+                    }
+                    // Candlestick points carry o/h/l/c; line points carry {x, y}.
+                    if (d.o != null && d.h != null && d.l != null && d.c != null) {
+                        return [
+                            `${_t("Open")}: ${d.o}`,
+                            `${_t("High")}: ${d.h}`,
+                            `${_t("Low")}: ${d.l}`,
+                            `${_t("Close")}: ${d.c}`,
+                        ];
+                    }
+                    if (d.y != null) {
+                        return `${ctx.dataset.label}: ${formatPrice(d.y)}`;
+                    }
+                    return "";
                 },
             },
         };
@@ -326,7 +649,20 @@ export class KlineChartField extends Component {
             mode: "index",
             intersect: false,
             callbacks: {
-                label: (ctx) => `${_t("Volume")}: ${compactNumber(ctx.raw)}`,
+                label: (ctx) => {
+                    const d = ctx.raw;
+                    if (d == null) {
+                        return "";
+                    }
+                    // Bar points are bare numbers; VOLMA line points are {x, y}.
+                    if (typeof d === "number") {
+                        return `${_t("Volume")}: ${compactNumber(d)}`;
+                    }
+                    if (d.y != null) {
+                        return `${ctx.dataset.label}: ${compactNumber(d.y)}`;
+                    }
+                    return "";
+                },
             },
         };
     }

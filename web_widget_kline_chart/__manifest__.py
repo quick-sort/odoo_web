@@ -15,6 +15,9 @@
           synced between the two charts.
         - Up/down colours, field key mapping and chart height are
           configurable through the field ``options``.
+        - Optional technical indicators overlaid on the price chart:
+          moving averages (MA) and Bollinger Bands (BOLL), each with a
+          runtime show/hide toggle chip.
     """,
     "depends": [
         "web",

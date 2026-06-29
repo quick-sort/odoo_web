@@ -9,10 +9,34 @@
                     title="重置缩放">
                 ↺
             </button>
+            <div class="o_kline_indicators" t-if="hasIndicators">
+                <t t-foreach="indicatorToggles" t-as="ind" t-key="ind.key">
+                    <button type="button"
+                            class="o_kline_ind_chip"
+                            t-att-class="{'o_kline_ind_on': ind.on}"
+                            t-att-title="ind.label"
+                            t-on-click="() => this.toggleIndicator(ind.key)">
+                        <span class="o_kline_ind_dot" t-att-style="ind.dotStyle"/>
+                        <t t-esc="ind.label"/>
+                    </button>
+                </t>
+            </div>
             <div class="o_kline_price_wrap">
                 <canvas t-ref="priceCanvas" />
             </div>
             <div t-if="showVolume" class="o_kline_volume_wrap">
+                <div class="o_kline_indicators o_kline_indicators_vol" t-if="hasVolumeIndicators">
+                    <t t-foreach="volumeIndicatorToggles" t-as="ind" t-key="ind.key">
+                        <button type="button"
+                                class="o_kline_ind_chip"
+                                t-att-class="{'o_kline_ind_on': ind.on}"
+                                t-att-title="ind.label"
+                                t-on-click="() => this.toggleIndicator(ind.key)">
+                            <span class="o_kline_ind_dot" t-att-style="ind.dotStyle"/>
+                            <t t-esc="ind.label"/>
+                        </button>
+                    </t>
+                </div>
                 <canvas t-ref="volumeCanvas" />
             </div>
             <div t-if="isEmpty" class="o_kline_empty">
