@@ -21,7 +21,6 @@
                     string="Archived"
                     domain="[('active', '=', False)]"
                 />
-                <searchpanel />
             </search>
         </field>
     </record>
@@ -216,14 +215,14 @@
         <field name="name">Spreadsheets</field>
         <field name="action" ref="spreadsheet_spreadsheet_act_window" />
         <field name="web_icon">spreadsheet_oca,static/description/icon.png</field>
-        <field name="group_ids" eval="[(4, ref('spreadsheet_oca.group_user'))]" />
+        <field name="group_ids" eval="[Command.link(ref('spreadsheet_oca.group_user'))]" />
         <field name="sequence" eval="16" />
     </record>
 
     <record model="ir.ui.menu" id="spreadsheet_spreadsheet_configuration_menu">
         <field name="name">Configuration</field>
         <field name="parent_id" ref="spreadsheet_spreadsheet_menu" />
-        <field name="group_ids" eval="[(4, ref('spreadsheet_oca.group_user'))]" />
+        <field name="group_ids" eval="[Command.link(ref('spreadsheet_oca.group_user'))]" />
         <field name="sequence" eval="16" />
     </record>
 
@@ -231,7 +230,7 @@
         <field name="name">Spreadsheets Tags</field>
         <field name="parent_id" ref="spreadsheet_spreadsheet_configuration_menu" />
         <field name="action" ref="spreadsheet_spreadsheet_tags_act_window" />
-        <field name="group_ids" eval="[(4, ref('spreadsheet_oca.group_user'))]" />
+        <field name="group_ids" eval="[Command.link(ref('spreadsheet_oca.group_user'))]" />
         <field name="sequence" eval="16" />
     </record>
 </odoo>
