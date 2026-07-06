@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- DAG View definition for project.task -->
+    <record id="view_project_task_dag" model="ir.ui.view">
+        <field name="name">project.task.dag</field>
+        <field name="model">project.task</field>
+        <field name="arch" type="xml">
+            <dag edge_field="depend_ids"
+                 direction="TB"
+                 color_field="stage_id"
+                 label_field="name">
+                <field name="name"/>
+                <field name="depend_ids"/>
+                <field name="stage_id"/>
+                <field name="user_ids"/>
+            </dag>
+        </field>
+    </record>
+
+    <!-- Add DAG to the project.task action view modes -->
+    <record id="action_project_task_dag" model="ir.actions.act_window">
+        <field name="name">Task Dependencies (DAG)</field>
+        <field name="res_model">project.task</field>
+        <field name="view_mode">dag,list,form</field>
+        <field name="context">{'default_project_id': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No tasks found.
+            </p>
+            <p>Create tasks with dependencies to visualize the DAG.</p>
+        </field>
+    </record>
+
+    <!-- Menu item under Project -->
+    <menuitem id="menu_project_task_dag"
+              name="Task Dependencies"
+              action="action_project_task_dag"
+              parent="project.menu_main_pm"
+              sequence="30"/>
+
+</odoo>

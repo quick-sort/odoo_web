@@ -1,0 +1,119 @@
+.o_field_3d_viewer {
+    position: relative;
+    width: 100%;
+
+    .o_3d_viewer_container {
+        position: relative;
+        width: 100%;
+        min-height: 300px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #f0f0f0;
+
+        canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+            outline: none;
+            border-radius: 8px;
+        }
+
+        &:fullscreen {
+            border: none;
+            border-radius: 0;
+
+            canvas {
+                border-radius: 0;
+            }
+        }
+    }
+
+    .o_3d_loading_overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.85);
+        z-index: 10;
+        border-radius: 8px;
+    }
+
+    .o_3d_error_overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        z-index: 10;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 8px;
+    }
+
+    .o_3d_empty_state {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        color: #6c757d;
+    }
+
+    .o_3d_toolbar {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        display: flex;
+        gap: 4px;
+        z-index: 5;
+
+        .btn {
+            opacity: 0.8;
+            backdrop-filter: blur(4px);
+            background: rgba(255, 255, 255, 0.85);
+
+            &:hover {
+                opacity: 1;
+                background: rgba(255, 255, 255, 0.95);
+            }
+
+            &.active {
+                background: #0d6efd;
+                color: #fff;
+                border-color: #0d6efd;
+                opacity: 1;
+            }
+        }
+    }
+
+    .o_3d_upload_controls {
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .o_3d_filename {
+        margin-top: 4px;
+    }
+}
+
+// When inside a form sheet, ensure good sizing
+.o_form_view .o_field_3d_viewer {
+    .o_3d_viewer_container {
+        max-height: 600px;
+    }
+}

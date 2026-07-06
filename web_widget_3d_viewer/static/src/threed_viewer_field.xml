@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+    <t t-name="web_widget_3d_viewer.ThreeDViewerField" owl="1">
+        <div class="o_field_3d_viewer">
+            <!-- Viewer container -->
+            <div class="o_3d_viewer_container"
+                 t-att-style="containerStyle"
+                 t-ref="viewer"
+                 t-on-dragover="onDragOver"
+                 t-on-drop="onDrop">
+
+                <!-- Loading overlay -->
+                <div t-if="state.isLoading" class="o_3d_loading_overlay">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <span class="mt-2 small text-muted">Loading 3D model...</span>
+                </div>
+
+                <!-- Error display -->
+                <div t-if="state.error" class="o_3d_error_overlay">
+                    <i class="fa fa-exclamation-triangle text-warning fa-2x mb-2"/>
+                    <span class="small text-danger" t-esc="state.error"/>
+                </div>
+
+                <!-- Empty state (no file uploaded) -->
+                <div t-if="!hasValue and !state.isLoading" class="o_3d_empty_state">
+                    <i class="fa fa-cube fa-3x mb-2 opacity-50"/>
+                    <p class="mb-1">No 3D model</p>
+                    <p t-if="!isReadonly" class="small text-muted mb-0">
+                        Drag &amp; drop a file here or click upload
+                    </p>
+                    <p class="small text-muted">(STL, OBJ, GLTF, GLB)</p>
+                </div>
+            </div>
+
+            <!-- Toolbar (only shown when model is loaded) -->
+            <div t-if="state.hasModel" class="o_3d_toolbar">
+                <button type="button" class="btn btn-sm btn-outline-secondary"
+                        t-on-click="resetCamera" title="Reset camera">
+                    <i class="fa fa-crosshairs"/>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary"
+                        t-on-click="toggleWireframe"
+                        t-att-class="{'active': state.showWireframe}"
+                        title="Toggle wireframe">
+                    <i class="fa fa-th"/>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary"
+                        t-on-click="toggleAutoRotate" title="Toggle auto-rotate">
+                    <i class="fa fa-repeat"/>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary"
+                        t-on-click="toggleFullscreen" title="Fullscreen">
+                    <i t-att-class="state.isFullscreen ? 'fa fa-compress' : 'fa fa-expand'"/>
+                </button>
+            </div>
+
+            <!-- Upload controls (in edit mode) -->
+            <div t-if="!isReadonly" class="o_3d_upload_controls">
+                <button type="button" class="btn btn-sm btn-primary"
+                        t-on-click="onUploadClick">
+                    <i class="fa fa-upload"/> Upload 3D Model
+                </button>
+                <button t-if="hasValue" type="button" class="btn btn-sm btn-outline-danger"
+                        t-on-click="onClear">
+                    <i class="fa fa-trash"/> Remove
+                </button>
+                <span t-if="filename" class="small text-muted ms-2">
+                    <i class="fa fa-file-o"/> <t t-esc="filename"/>
+                </span>
+                <input t-ref="fileInput" type="file"
+                       class="d-none"
+                       accept=".stl,.obj,.gltf,.glb"
+                       t-on-change="onFileChange"/>
+            </div>
+
+            <!-- Filename display (readonly) -->
+            <div t-if="isReadonly and filename" class="o_3d_filename small text-muted mt-1">
+                <i class="fa fa-file-o"/> <t t-esc="filename"/>
+            </div>
+        </div>
+    </t>
+</templates>
